@@ -24,9 +24,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.chalkbyte
 class AuthService {
 	private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
 		const token = this.getAccessToken();
-		const headers: HeadersInit = {
+		const headers: Record<string, string> = {
 			'Content-Type': 'application/json',
-			...options.headers
+			...(options.headers as Record<string, string>)
 		};
 
 		if (token && !endpoint.includes('/login')) {
@@ -39,8 +39,19 @@ class AuthService {
 		});
 
 		if (!response.ok) {
-			const error: ErrorResponse = await response.json();
-			throw new Error(error.error || 'An error occurred');
+			let errorMessage = 'An error occurred';
+			try {
+				const contentType = response.headers.get('content-type');
+				if (contentType && contentType.includes('application/json')) {
+					const error: ErrorResponse = await response.json();
+					errorMessage = error.error || errorMessage;
+				} else {
+					errorMessage = `${response.status} ${response.statusText}`;
+				}
+			} catch {
+				errorMessage = `${response.status} ${response.statusText}`;
+			}
+			throw new Error(errorMessage);
 		}
 
 		return response.json();
@@ -83,14 +94,14 @@ class AuthService {
 	}
 
 	async requestPasswordReset(data: PasswordResetRequest): Promise<PasswordResetResponse> {
-		return this.request<PasswordResetResponse>('/api/auth/password-reset', {
+		return this.request<PasswordResetResponse>('/api/auth/forgot-password', {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
 	}
 
 	async resetPassword(data: PasswordResetConfirmRequest): Promise<PasswordResetConfirmResponse> {
-		return this.request<PasswordResetConfirmResponse>('/api/auth/password-reset/confirm', {
+		return this.request<PasswordResetConfirmResponse>('/api/auth/reset-password', {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
