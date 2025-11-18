@@ -5,16 +5,18 @@
 		RowSelectionState,
 		SortingState,
 		VisibilityState,
-		Updater,
-		Column
+		Updater
 	} from '@tanstack/table-core';
 	import { getCoreRowModel, getSortedRowModel } from '@tanstack/table-core';
-	import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table/index.js';
+	import {
+		createSvelteTable,
+		FlexRender,
+		DataTablePagination,
+		DataTableViewOptions
+	} from '$lib/components/ui/data-table/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import ListFilterIcon from '@lucide/svelte/icons/list-filter';
 	import XIcon from '@lucide/svelte/icons/x';
 	import type { PaginationMeta } from '$lib/types/api';
@@ -38,7 +40,7 @@
 		onPaginationChange,
 		onFilterChange,
 		onSortingChange,
-		pageSize = 10,
+		pageSize = $bindable(10),
 		initialFilters,
 		showFilters = $bindable(false)
 	}: DataTableProps<TData, TValue> = $props();
@@ -58,25 +60,6 @@
 			addressFilter = initialFilters.address;
 		}
 	});
-
-	const currentPage = $derived(Math.floor(meta.offset / meta.limit) + 1);
-	const totalPages = $derived(Math.ceil(meta.total / meta.limit));
-	const canPreviousPage = $derived(meta.offset > 0);
-	const canNextPage = $derived(meta.has_more);
-
-	function handlePreviousPage() {
-		if (canPreviousPage) {
-			const newOffset = Math.max(0, meta.offset - pageSize);
-			onPaginationChange(newOffset, pageSize);
-		}
-	}
-
-	function handleNextPage() {
-		if (canNextPage) {
-			const newOffset = meta.offset + pageSize;
-			onPaginationChange(newOffset, pageSize);
-		}
-	}
 
 	function handleFilterInput(value: string) {
 		filterValue = value;
@@ -198,27 +181,7 @@
 					</Button>
 				{/if}
 			</div>
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
-					{#snippet child({ props })}
-						<Button {...props} variant="outline" size="sm" class="h-9">
-							View <ChevronDownIcon class="ml-2 size-4" />
-						</Button>
-					{/snippet}
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content align="end">
-					{#each table
-						.getAllColumns()
-						.filter((col: Column<TData>) => col.getCanHide()) as column (column.id)}
-						<DropdownMenu.CheckboxItem
-							class="capitalize"
-							bind:checked={() => column.getIsVisible(), (v) => column.toggleVisibility(!!v)}
-						>
-							{column.id}
-						</DropdownMenu.CheckboxItem>
-					{/each}
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
+			<DataTableViewOptions {table} />
 		</div>
 		{#if showFilters}
 			<div class="flex items-center gap-2 rounded-md border bg-muted/50 p-3">
@@ -271,32 +234,11 @@
 			</Table.Body>
 		</Table.Root>
 	</div>
-	<div class="flex items-center justify-between pt-4">
-		<div class="flex-1 text-sm text-muted-foreground">
-			{#if table.getFilteredSelectedRowModel().rows.length > 0}
-				{table.getFilteredSelectedRowModel().rows.length} of {data.length} row(s) selected.
-			{:else}
-				Showing {meta.offset + 1} to {Math.min(meta.offset + meta.limit, meta.total)} of {meta.total}
-				results
-			{/if}
-		</div>
-		<div class="flex items-center space-x-2">
-			<span class="text-sm text-muted-foreground">
-				Page {currentPage} of {totalPages}
-			</span>
-			<div class="space-x-2">
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={handlePreviousPage}
-					disabled={!canPreviousPage}
-				>
-					Previous
-				</Button>
-				<Button variant="outline" size="sm" onclick={handleNextPage} disabled={!canNextPage}>
-					Next
-				</Button>
-			</div>
-		</div>
-	</div>
+	<DataTablePagination
+		{meta}
+		bind:pageSize
+		{onPaginationChange}
+		selectedRowCount={table.getFilteredSelectedRowModel().rows.length}
+		totalRowCount={data.length}
+	/>
 </div>
