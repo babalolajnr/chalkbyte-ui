@@ -1,10 +1,11 @@
 <script lang="ts">
-	import * as Collapsible from "$lib/components/ui/collapsible/index.js";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
+	import { resolve } from '$app/paths';
 
 	let {
-		items,
+		items
 	}: {
 		items: {
 			title: string;
@@ -30,7 +31,7 @@
 					<Sidebar.MenuItem {...props}>
 						<Sidebar.MenuButton tooltipContent={mainItem.title}>
 							{#snippet child({ props })}
-								<a href={mainItem.url} {...props}>
+								<a href={resolve(mainItem.url)} {...props}>
 									<mainItem.icon />
 									<span>{mainItem.title}</span>
 								</a>
@@ -39,10 +40,7 @@
 						{#if mainItem.items?.length}
 							<Collapsible.Trigger>
 								{#snippet child({ props })}
-									<Sidebar.MenuAction
-										{...props}
-										class="data-[state=open]:rotate-90"
-									>
+									<Sidebar.MenuAction {...props} class="data-[state=open]:rotate-90">
 										<ChevronRightIcon />
 										<span class="sr-only">Toggle</span>
 									</Sidebar.MenuAction>
@@ -52,7 +50,7 @@
 								<Sidebar.MenuSub>
 									{#each mainItem.items as subItem (subItem.title)}
 										<Sidebar.MenuSubItem>
-											<Sidebar.MenuSubButton href={subItem.url}>
+											<Sidebar.MenuSubButton href={resolve(subItem.url)}>
 												<span>{subItem.title}</span>
 											</Sidebar.MenuSubButton>
 										</Sidebar.MenuSubItem>

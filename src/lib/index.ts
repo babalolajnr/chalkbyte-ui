@@ -6,7 +6,7 @@ export {
 	authStore,
 	isAuthenticated,
 	currentUser,
-	isLoading,
+	// isLoading,
 	mfaRequired
 } from './stores/auth.store';
 export { requireAuth, requireGuest, requireRole } from './guards/auth.guard';

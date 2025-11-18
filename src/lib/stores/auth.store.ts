@@ -1,12 +1,11 @@
 import { writable, derived } from 'svelte/store';
 import type { AuthState, User } from '$lib/types/auth';
-import { authService } from '$lib/services/auth.service';
+import { mfaService } from '$lib/services/mfa.service';
 
 const initialState: AuthState = {
 	user: null,
 	accessToken: null,
 	isAuthenticated: false,
-	isLoading: true,
 	tempToken: null,
 	mfaRequired: false
 };
@@ -17,7 +16,9 @@ function createAuthStore() {
 	return {
 		subscribe,
 		setUser: (user: User, accessToken: string) => {
-			authService.setAccessToken(accessToken);
+			if (typeof window !== 'undefined') {
+				localStorage.setItem('access_token', accessToken);
+			}
 			update((state) => ({
 				...state,
 				user,
@@ -47,22 +48,26 @@ function createAuthStore() {
 			update((state) => ({ ...state, isLoading }));
 		},
 		logout: () => {
-			authService.logout();
+			if (typeof window !== 'undefined') {
+				localStorage.removeItem('access_token');
+			}
 			set(initialState);
 		},
 		initialize: async () => {
-			const token = authService.getAccessToken();
+			const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
 			if (token) {
 				try {
-					const status = await authService.getMFAStatus();
+					await mfaService.getMFAStatus();
 					update((state) => ({
 						...state,
 						accessToken: token,
 						isAuthenticated: true,
 						isLoading: false
 					}));
-				} catch (error) {
-					authService.removeAccessToken();
+				} catch {
+					if (typeof window !== 'undefined') {
+						localStorage.removeItem('access_token');
+					}
 					update((state) => ({ ...state, isLoading: false }));
 				}
 			} else {
@@ -77,5 +82,5 @@ export const authStore = createAuthStore();
 
 export const isAuthenticated = derived(authStore, ($auth) => $auth.isAuthenticated);
 export const currentUser = derived(authStore, ($auth) => $auth.user);
-export const isLoading = derived(authStore, ($auth) => $auth.isLoading);
+// export const isLoading = derived(authStore, ($auth) => $auth.isLoading);
 export const mfaRequired = derived(authStore, ($auth) => $auth.mfaRequired);

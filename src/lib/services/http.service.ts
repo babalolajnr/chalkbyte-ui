@@ -7,13 +7,22 @@ if (!API_BASE_URL) {
 }
 
 export class HttpService {
-	protected async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+	protected async request<T>(
+		endpoint: string,
+		requiresAuth: boolean = false,
+		options: RequestInit = {}
+	): Promise<T> {
 		const headers: Record<string, string> = {
 			'Content-Type': 'application/json',
 			...(options.headers as Record<string, string>)
 		};
 
 		const token = this.getAuthToken();
+
+		if (requiresAuth && !token) {
+			throw new Error('Authentication required');
+		}
+
 		if (token) {
 			headers['Authorization'] = `Bearer ${token}`;
 		}
@@ -42,7 +51,7 @@ export class HttpService {
 		return response.json();
 	}
 
-	protected getAuthToken(): string | null {
-		return null;
+	protected getAuthToken() {
+		return localStorage.getItem('access_token');
 	}
 }

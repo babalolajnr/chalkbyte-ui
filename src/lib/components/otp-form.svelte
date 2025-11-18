@@ -35,12 +35,12 @@
 		e.preventDefault();
 
 		if (showRecoveryCodeInput) {
-			$recoveryCodeMutation.mutate({
+			recoveryCodeMutation.mutate({
 				recovery_code: recoveryCode,
 				temp_token: tempToken
 			});
 		} else {
-			$verifyMFAMutation.mutate({
+			verifyMFAMutation.mutate({
 				code: otpValue,
 				temp_token: tempToken
 			});
@@ -49,20 +49,20 @@
 
 	function handleResend() {
 		otpValue = '';
-		$verifyMFAMutation.reset();
+		verifyMFAMutation.reset();
 	}
 
 	function toggleRecoveryCode() {
 		showRecoveryCodeInput = !showRecoveryCodeInput;
 		otpValue = '';
 		recoveryCode = '';
-		$verifyMFAMutation.reset();
-		$recoveryCodeMutation.reset();
+		verifyMFAMutation.reset();
+		recoveryCodeMutation.reset();
 	}
 
-	const isLoading = $derived($verifyMFAMutation.isPending || $recoveryCodeMutation.isPending);
+	const isLoading = $derived(verifyMFAMutation.isPending || recoveryCodeMutation.isPending);
 	const error = $derived(
-		$verifyMFAMutation.error?.message || $recoveryCodeMutation.error?.message || ''
+		verifyMFAMutation.error?.message || recoveryCodeMutation.error?.message || ''
 	);
 </script>
 
@@ -156,7 +156,7 @@
 		</Field.Group>
 	</form>
 	<Field.Description class="px-6 text-center">
-		By clicking continue, you agree to our <a href={resolve('/terms')}>Terms of Service</a>
-		and <a href={resolve('/privacy')}>Privacy Policy</a>.
+		By clicking continue, you agree to our <a href="#terms">Terms of Service</a>
+		and <a href="#privacy">Privacy Policy</a>.
 	</Field.Description>
 </div>

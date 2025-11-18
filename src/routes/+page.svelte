@@ -1,16 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { isAuthenticated, currentUser } from '$lib/stores/auth.store';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import ModeToggle from '$lib/components/mode-toggle.svelte';
-
-	onMount(async () => {
-		if ($isAuthenticated) {
-			await goto(resolve('/dashboard'));
-		}
-	});
 </script>
 
 <div

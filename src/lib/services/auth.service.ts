@@ -2,21 +2,10 @@ import { HttpService } from './http.service';
 import type {
 	LoginRequest,
 	LoginResponse,
-	MFAVerifyRequest,
-	MFAVerifyResponse,
-	RecoveryCodeRequest,
-	RecoveryCodeResponse,
 	PasswordResetRequest,
 	PasswordResetResponse,
 	PasswordResetConfirmRequest,
-	PasswordResetConfirmResponse,
-	MFAEnableResponse,
-	MFAVerifySetupRequest,
-	MFAVerifySetupResponse,
-	MFADisableRequest,
-	MFADisableResponse,
-	MFAStatusResponse,
-	MFARegenerateCodesResponse
+	PasswordResetConfirmResponse
 } from '$lib/types/auth';
 
 class AuthService extends HttpService {
@@ -40,33 +29,7 @@ class AuthService extends HttpService {
 	}
 
 	async login(data: LoginRequest): Promise<LoginResponse> {
-		const response = await this.request<LoginResponse>('/api/auth/login', {
-			method: 'POST',
-			body: JSON.stringify(data)
-		});
-
-		if (response.access_token) {
-			this.setAccessToken(response.access_token);
-		}
-
-		return response;
-	}
-
-	async verifyMFA(data: MFAVerifyRequest): Promise<MFAVerifyResponse> {
-		const response = await this.request<MFAVerifyResponse>('/api/auth/mfa/verify', {
-			method: 'POST',
-			body: JSON.stringify(data)
-		});
-
-		if (response.access_token) {
-			this.setAccessToken(response.access_token);
-		}
-
-		return response;
-	}
-
-	async loginWithRecoveryCode(data: RecoveryCodeRequest): Promise<RecoveryCodeResponse> {
-		const response = await this.request<RecoveryCodeResponse>('/api/auth/recovery', {
+		const response = await this.request<LoginResponse>('/api/auth/login', false, {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
@@ -79,48 +42,16 @@ class AuthService extends HttpService {
 	}
 
 	async requestPasswordReset(data: PasswordResetRequest): Promise<PasswordResetResponse> {
-		return this.request<PasswordResetResponse>('/api/auth/forgot-password', {
+		return this.request<PasswordResetResponse>('/api/auth/forgot-password', false, {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
 	}
 
 	async resetPassword(data: PasswordResetConfirmRequest): Promise<PasswordResetConfirmResponse> {
-		return this.request<PasswordResetConfirmResponse>('/api/auth/reset-password', {
+		return this.request<PasswordResetConfirmResponse>('/api/auth/reset-password', false, {
 			method: 'POST',
 			body: JSON.stringify(data)
-		});
-	}
-
-	async enableMFA(): Promise<MFAEnableResponse> {
-		return this.request<MFAEnableResponse>('/api/auth/mfa/enable', {
-			method: 'POST'
-		});
-	}
-
-	async verifyMFASetup(data: MFAVerifySetupRequest): Promise<MFAVerifySetupResponse> {
-		return this.request<MFAVerifySetupResponse>('/api/auth/mfa/verify-setup', {
-			method: 'POST',
-			body: JSON.stringify(data)
-		});
-	}
-
-	async disableMFA(data: MFADisableRequest): Promise<MFADisableResponse> {
-		return this.request<MFADisableResponse>('/api/auth/mfa/disable', {
-			method: 'POST',
-			body: JSON.stringify(data)
-		});
-	}
-
-	async getMFAStatus(): Promise<MFAStatusResponse> {
-		return this.request<MFAStatusResponse>('/api/auth/mfa/status', {
-			method: 'GET'
-		});
-	}
-
-	async regenerateRecoveryCodes(): Promise<MFARegenerateCodesResponse> {
-		return this.request<MFARegenerateCodesResponse>('/api/auth/mfa/recovery-codes', {
-			method: 'POST'
 		});
 	}
 
