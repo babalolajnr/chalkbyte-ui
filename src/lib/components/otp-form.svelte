@@ -8,6 +8,7 @@
 	import { useVerifyMFA, useLoginWithRecoveryCode } from '$lib/queries/auth.queries';
 	import { authStore } from '$lib/stores/auth.store';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 
 	let { class: className, ...restProps }: HTMLAttributes<HTMLDivElement> = $props();
@@ -25,7 +26,7 @@
 			if (state.tempToken) {
 				tempToken = state.tempToken;
 			} else if (!state.mfaRequired) {
-				goto('/login');
+				goto(resolve('/login'));
 			}
 		});
 	});
@@ -69,7 +70,7 @@
 	<form onsubmit={handleSubmit}>
 		<Field.Group>
 			<div class="flex flex-col items-center gap-2 text-center">
-				<a href="/" class="flex flex-col items-center gap-2 font-medium">
+				<a href={resolve('/')} class="flex flex-col items-center gap-2 font-medium">
 					<div class="flex size-8 items-center justify-center rounded-md">
 						<GalleryVerticalEndIcon class="size-6" />
 					</div>
@@ -155,7 +156,7 @@
 		</Field.Group>
 	</form>
 	<Field.Description class="px-6 text-center">
-		By clicking continue, you agree to our <a href="/terms">Terms of Service</a>
-		and <a href="/privacy">Privacy Policy</a>.
+		By clicking continue, you agree to our <a href={resolve('/terms')}>Terms of Service</a>
+		and <a href={resolve('/privacy')}>Privacy Policy</a>.
 	</Field.Description>
 </div>

@@ -1,3 +1,4 @@
+import { HttpService } from './http.service';
 import type {
 	LoginRequest,
 	LoginResponse,
@@ -15,82 +16,66 @@ import type {
 	MFADisableRequest,
 	MFADisableResponse,
 	MFAStatusResponse,
-	MFARegenerateCodesResponse,
-	ErrorResponse
+	MFARegenerateCodesResponse
 } from '$lib/types/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.chalkbyte.com';
-
-class AuthService {
-	private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-		const token = this.getAccessToken();
-		const headers: Record<string, string> = {
-			'Content-Type': 'application/json',
-			...(options.headers as Record<string, string>)
-		};
-
-		if (token && !endpoint.includes('/login')) {
-			headers['Authorization'] = `Bearer ${token}`;
-		}
-
-		const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-			...options,
-			headers
-		});
-
-		if (!response.ok) {
-			let errorMessage = 'An error occurred';
-			try {
-				const contentType = response.headers.get('content-type');
-				if (contentType && contentType.includes('application/json')) {
-					const error: ErrorResponse = await response.json();
-					errorMessage = error.error || errorMessage;
-				} else {
-					errorMessage = `${response.status} ${response.statusText}`;
-				}
-			} catch {
-				errorMessage = `${response.status} ${response.statusText}`;
-			}
-			throw new Error(errorMessage);
-		}
-
-		return response.json();
-	}
-
-	getAccessToken(): string | null {
+class AuthService extends HttpService {
+	protected getAuthToken(): string | null {
 		if (typeof window === 'undefined') return null;
 		return localStorage.getItem('access_token');
 	}
 
-	setAccessToken(token: string): void {
+	public isAuthenticated(): boolean {
+		return !!this.getAuthToken();
+	}
+
+	private setAccessToken(token: string): void {
 		if (typeof window === 'undefined') return;
 		localStorage.setItem('access_token', token);
 	}
 
-	removeAccessToken(): void {
+	private removeAccessToken(): void {
 		if (typeof window === 'undefined') return;
 		localStorage.removeItem('access_token');
 	}
 
 	async login(data: LoginRequest): Promise<LoginResponse> {
-		return this.request<LoginResponse>('/api/auth/login', {
+		const response = await this.request<LoginResponse>('/api/auth/login', {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
+
+		if (response.access_token) {
+			this.setAccessToken(response.access_token);
+		}
+
+		return response;
 	}
 
 	async verifyMFA(data: MFAVerifyRequest): Promise<MFAVerifyResponse> {
-		return this.request<MFAVerifyResponse>('/api/auth/mfa/verify', {
+		const response = await this.request<MFAVerifyResponse>('/api/auth/mfa/verify', {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
+
+		if (response.access_token) {
+			this.setAccessToken(response.access_token);
+		}
+
+		return response;
 	}
 
 	async loginWithRecoveryCode(data: RecoveryCodeRequest): Promise<RecoveryCodeResponse> {
-		return this.request<RecoveryCodeResponse>('/api/auth/recovery', {
+		const response = await this.request<RecoveryCodeResponse>('/api/auth/recovery', {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
+
+		if (response.access_token) {
+			this.setAccessToken(response.access_token);
+		}
+
+		return response;
 	}
 
 	async requestPasswordReset(data: PasswordResetRequest): Promise<PasswordResetResponse> {

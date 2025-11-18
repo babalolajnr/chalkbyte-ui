@@ -24,7 +24,7 @@
 <div class="flex min-h-svh w-full items-center justify-center px-4">
 	<Card.Root class="mx-auto w-full max-w-sm">
 		<Card.Header>
-			<Card.Title class="text-2xl">Reset Password</Card.Title>
+			<Card.Title class="text-2xl">Forgot Password</Card.Title>
 			<Card.Description>
 				{#if resetMutation.isSuccess}
 					{resetMutation.data?.message || 'Check your email for a password reset link'}

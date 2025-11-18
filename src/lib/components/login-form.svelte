@@ -58,7 +58,7 @@
 					<div class="flex items-center">
 						<FieldLabel for="password-{id}">Password</FieldLabel>
 						<a
-							href={resolve('/password-reset')}
+							href={resolve('/forgot-password')}
 							class="ml-auto inline-block text-sm underline"
 							data-sveltekit-reload="off"
 						>

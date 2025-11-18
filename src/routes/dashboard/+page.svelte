@@ -5,6 +5,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	onMount(() => {
 		requireAuth();
@@ -12,7 +13,7 @@
 
 	function handleLogout() {
 		authStore.logout();
-		goto('/login');
+		goto(resolve('/login'));
 	}
 </script>
 
@@ -62,9 +63,7 @@
 					<Card.Description>Manage your account security</Card.Description>
 				</Card.Header>
 				<Card.Content class="space-y-2">
-					<Button href="/settings/mfa" class="w-full" variant="outline">
-						Manage MFA
-					</Button>
+					<Button href="/settings/mfa" class="w-full" variant="outline">Manage MFA</Button>
 					<Button href="/settings/password" class="w-full" variant="outline">
 						Change Password
 					</Button>

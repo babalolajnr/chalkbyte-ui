@@ -2,6 +2,7 @@ import { createMutation, createQuery } from '@tanstack/svelte-query';
 import { authService } from '$lib/services/auth.service';
 import { authStore } from '$lib/stores/auth.store';
 import { goto } from '$app/navigation';
+import { resolve } from '$app/paths';
 import type {
 	LoginRequest,
 	MFAVerifyRequest,
@@ -23,7 +24,7 @@ export function useMFAStatus() {
 	return createQuery(() => ({
 		queryKey: authKeys.mfaStatus(),
 		queryFn: () => authService.getMFAStatus(),
-		enabled: !!authService.getAccessToken()
+		enabled: authService.isAuthenticated()
 	}));
 }
 
@@ -31,13 +32,13 @@ export function useMFAStatus() {
 export function useLogin() {
 	return createMutation(() => ({
 		mutationFn: (data: LoginRequest) => authService.login(data),
-		onSuccess: (response) => {
+		onSuccess: async (response) => {
 			if (response.mfa_required && response.temp_token) {
 				authStore.setMFARequired(response.temp_token);
-				goto('/otp');
+				await goto(resolve('/otp'));
 			} else if (response.access_token && response.user) {
 				authStore.setUser(response.user, response.access_token);
-				goto('/dashboard');
+				await goto(resolve('/dashboard'));
 			}
 		}
 	}));
@@ -46,11 +47,11 @@ export function useLogin() {
 export function useVerifyMFA() {
 	return createMutation(() => ({
 		mutationFn: (data: MFAVerifyRequest) => authService.verifyMFA(data),
-		onSuccess: (response) => {
+		onSuccess: async (response) => {
 			if (response.access_token && response.user) {
 				authStore.setUser(response.user, response.access_token);
 				authStore.clearMFARequired();
-				goto('/dashboard');
+				await goto(resolve('/dashboard'));
 			}
 		}
 	}));
@@ -59,11 +60,11 @@ export function useVerifyMFA() {
 export function useLoginWithRecoveryCode() {
 	return createMutation(() => ({
 		mutationFn: (data: RecoveryCodeRequest) => authService.loginWithRecoveryCode(data),
-		onSuccess: (response) => {
+		onSuccess: async (response) => {
 			if (response.access_token && response.user) {
 				authStore.setUser(response.user, response.access_token);
 				authStore.clearMFARequired();
-				goto('/dashboard');
+				await goto(resolve('/dashboard'));
 			}
 		}
 	}));
@@ -78,8 +79,8 @@ export function useRequestPasswordReset() {
 export function useResetPassword() {
 	return createMutation(() => ({
 		mutationFn: (data: PasswordResetConfirmRequest) => authService.resetPassword(data),
-		onSuccess: () => {
-			goto('/login');
+		onSuccess: async () => {
+			await goto(resolve('/login'));
 		}
 	}));
 }

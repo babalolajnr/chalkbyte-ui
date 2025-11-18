@@ -2,17 +2,18 @@
 	import { onMount } from 'svelte';
 	import { isAuthenticated, currentUser } from '$lib/stores/auth.store';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button/index.js';
 
-	onMount(() => {
+	onMount(async () => {
 		if ($isAuthenticated) {
-			goto('/dashboard');
+			await goto(resolve('/dashboard'));
 		}
 	});
 </script>
 
 <div
-	class="flex min-h-svh flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 px-4"
+	class="flex min-h-svh flex-col items-center justify-center bg-linear-to-b from-gray-50 to-gray-100 px-4"
 >
 	<div class="w-full max-w-4xl text-center">
 		<h1 class="mb-4 text-5xl font-bold text-gray-900">Welcome to Chalkbyte</h1>
