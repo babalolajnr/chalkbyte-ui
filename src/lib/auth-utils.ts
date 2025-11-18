@@ -1,4 +1,6 @@
 import type { User } from '$lib/types/auth';
+import { authService } from '$lib/services/auth.service';
+import { authStore } from '$lib/stores/auth.store';
 
 /**
  * Check if a user has a specific role
@@ -11,6 +13,73 @@ export function hasRole(user: User | null, role: string | string[]): boolean {
 	}
 
 	return user.role === role;
+}
+
+/**
+ * Decode JWT token to extract expiration time
+ */
+function decodeJWT(token: string): { exp?: number } {
+	try {
+		const base64Url = token.split('.')[1];
+		const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+		const jsonPayload = decodeURIComponent(
+			atob(base64)
+				.split('')
+				.map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+				.join('')
+		);
+		return JSON.parse(jsonPayload);
+	} catch {
+		return {};
+	}
+}
+
+/**
+ * Check if token is expired or will expire soon (within 5 minutes)
+ */
+export function shouldRefreshToken(token: string | null): boolean {
+	if (!token) return false;
+
+	const decoded = decodeJWT(token);
+	if (!decoded.exp) return false;
+
+	const expirationTime = decoded.exp * 1000;
+	const currentTime = Date.now();
+	const fiveMinutes = 5 * 60 * 1000;
+
+	return expirationTime - currentTime < fiveMinutes;
+}
+
+/**
+ * Automatically refresh token if needed
+ */
+export async function autoRefreshToken(): Promise<boolean> {
+	const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+
+	if (!shouldRefreshToken(token)) {
+		return true;
+	}
+
+	try {
+		const response = await authService.refreshToken();
+		authStore.setUser(response.user, response.access_token, response.refresh_token);
+		return true;
+	} catch {
+		authStore.logout();
+		return false;
+	}
+}
+
+/**
+ * Setup automatic token refresh interval
+ * Returns cleanup function
+ */
+export function setupTokenRefresh(intervalMs: number = 4 * 60 * 1000): () => void {
+	const interval = setInterval(async () => {
+		await autoRefreshToken();
+	}, intervalMs);
+
+	return () => clearInterval(interval);
 }
 
 /**

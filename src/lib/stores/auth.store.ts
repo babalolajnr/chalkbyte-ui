@@ -5,6 +5,7 @@ import { mfaService } from '$lib/services/mfa.service';
 const initialState: AuthState = {
 	user: null,
 	accessToken: null,
+	refreshToken: null,
 	isAuthenticated: false,
 	tempToken: null,
 	mfaRequired: false
@@ -15,14 +16,18 @@ function createAuthStore() {
 
 	return {
 		subscribe,
-		setUser: (user: User, accessToken: string) => {
+		setUser: (user: User, accessToken: string, refreshToken?: string) => {
 			if (typeof window !== 'undefined') {
 				localStorage.setItem('access_token', accessToken);
+				if (refreshToken) {
+					localStorage.setItem('refresh_token', refreshToken);
+				}
 			}
 			update((state) => ({
 				...state,
 				user,
 				accessToken,
+				refreshToken: refreshToken || state.refreshToken,
 				isAuthenticated: true,
 				isLoading: false,
 				tempToken: null,
@@ -50,23 +55,28 @@ function createAuthStore() {
 		logout: () => {
 			if (typeof window !== 'undefined') {
 				localStorage.removeItem('access_token');
+				localStorage.removeItem('refresh_token');
 			}
 			set(initialState);
 		},
 		initialize: async () => {
 			const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
+			const refreshToken =
+				typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
 			if (token) {
 				try {
 					await mfaService.getMFAStatus();
 					update((state) => ({
 						...state,
 						accessToken: token,
+						refreshToken,
 						isAuthenticated: true,
 						isLoading: false
 					}));
 				} catch {
 					if (typeof window !== 'undefined') {
 						localStorage.removeItem('access_token');
+						localStorage.removeItem('refresh_token');
 					}
 					update((state) => ({ ...state, isLoading: false }));
 				}

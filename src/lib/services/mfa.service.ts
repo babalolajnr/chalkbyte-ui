@@ -24,6 +24,11 @@ class MFAService extends HttpService {
 		localStorage.setItem('access_token', token);
 	}
 
+	private setRefreshToken(token: string): void {
+		if (typeof window === 'undefined') return;
+		localStorage.setItem('refresh_token', token);
+	}
+
 	async verifyMFA(data: MFAVerifyRequest): Promise<MFAVerifyResponse> {
 		const response = await this.request<MFAVerifyResponse>('/api/mfa/verify', false, {
 			method: 'POST',
@@ -32,6 +37,10 @@ class MFAService extends HttpService {
 
 		if (response.access_token) {
 			this.setAccessToken(response.access_token);
+		}
+
+		if (response.refresh_token) {
+			this.setRefreshToken(response.refresh_token);
 		}
 
 		return response;
@@ -45,6 +54,10 @@ class MFAService extends HttpService {
 
 		if (response.access_token) {
 			this.setAccessToken(response.access_token);
+		}
+
+		if (response.refresh_token) {
+			this.setRefreshToken(response.refresh_token);
 		}
 
 		return response;

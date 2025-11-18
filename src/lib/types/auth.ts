@@ -14,6 +14,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
 	access_token?: string;
+	refresh_token?: string;
 	user?: User;
 	mfa_required?: boolean;
 	temp_token?: string;
@@ -26,6 +27,7 @@ export interface MFAVerifyRequest {
 
 export interface MFAVerifyResponse {
 	access_token: string;
+	refresh_token: string;
 	user: User;
 }
 
@@ -36,6 +38,7 @@ export interface RecoveryCodeRequest {
 
 export interface RecoveryCodeResponse {
 	access_token: string;
+	refresh_token: string;
 	user: User;
 }
 
@@ -53,6 +56,20 @@ export interface PasswordResetConfirmRequest {
 }
 
 export interface PasswordResetConfirmResponse {
+	message: string;
+}
+
+export interface RefreshTokenRequest {
+	refresh_token: string;
+}
+
+export interface RefreshTokenResponse {
+	access_token: string;
+	refresh_token: string;
+	user: User;
+}
+
+export interface LogoutResponse {
 	message: string;
 }
 
@@ -93,6 +110,7 @@ export interface ErrorResponse {
 export interface AuthState {
 	user: User | null;
 	accessToken: string | null;
+	refreshToken: string | null;
 	isAuthenticated: boolean;
 	tempToken: string | null;
 	mfaRequired: boolean;
