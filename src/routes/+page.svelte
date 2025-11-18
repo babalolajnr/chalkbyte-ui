@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import ModeToggle from '$lib/components/mode-toggle.svelte';
 
 	onMount(async () => {
 		if ($isAuthenticated) {
@@ -13,15 +14,20 @@
 </script>
 
 <div
-	class="flex min-h-svh flex-col items-center justify-center bg-linear-to-b from-gray-50 to-gray-100 px-4"
+	class="flex min-h-svh flex-col items-center justify-center bg-linear-to-b from-gray-50 to-gray-100 px-4 dark:from-gray-900 dark:to-gray-950"
 >
+	<div class="absolute top-4 right-4">
+		<ModeToggle />
+	</div>
 	<div class="w-full max-w-4xl text-center">
-		<h1 class="mb-4 text-5xl font-bold text-gray-900">Welcome to Chalkbyte</h1>
-		<p class="mb-8 text-xl text-gray-600">Your comprehensive learning management system</p>
+		<h1 class="mb-4 text-5xl font-bold text-gray-900 dark:text-gray-100">Welcome to Chalkbyte</h1>
+		<p class="mb-8 text-xl text-gray-600 dark:text-gray-400">
+			Your comprehensive learning management system
+		</p>
 
 		{#if $isAuthenticated}
 			<div class="space-y-4">
-				<p class="text-lg text-gray-700">
+				<p class="text-lg text-gray-700 dark:text-gray-300">
 					Welcome back, {$currentUser?.first_name}!
 				</p>
 				<div class="flex justify-center gap-4">
