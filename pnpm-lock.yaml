@@ -48,6 +48,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.1.14
         version: 4.1.17(vite@7.2.2(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2))
+      '@tanstack/table-core':
+        specifier: ^8.21.3
+        version: 8.21.3
       '@types/node':
         specifier: ^22
         version: 22.19.1
@@ -653,6 +656,10 @@ packages:
     resolution: {integrity: sha512-629mKyv09IA0W5PnRCG7xiS893aIZ5N+PvpaAJIxwepuEF9pyj6mxNSrTnG6vQTp7xhp2LH9Qi+LE/IJ36FzvA==}
     peerDependencies:
       svelte: ^5.25.0
+
+  '@tanstack/table-core@8.21.3':
+    resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
+    engines: {node: '>=12'}
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -2161,6 +2168,8 @@ snapshots:
     dependencies:
       '@tanstack/query-core': 5.90.10
       svelte: 5.43.8
+
+  '@tanstack/table-core@8.21.3': {}
 
   '@types/chai@5.2.3':
     dependencies:
