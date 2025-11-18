@@ -1,6 +1,6 @@
 import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 import { schoolService } from '$lib/services/school.service';
-import type { CreateSchoolDto } from '$lib/types/school';
+import type { CreateSchoolDto, SchoolQueryParams } from '$lib/types/school';
 
 // Query keys
 export const schoolKeys = {
@@ -12,10 +12,10 @@ export const schoolKeys = {
 };
 
 // Queries
-export function useSchools() {
+export function useSchools(params?: SchoolQueryParams) {
 	return createQuery(() => ({
-		queryKey: schoolKeys.list(),
-		queryFn: () => schoolService.getAllSchools()
+		queryKey: [...schoolKeys.list(), params],
+		queryFn: () => schoolService.getAllSchools(params)
 	}));
 }
 

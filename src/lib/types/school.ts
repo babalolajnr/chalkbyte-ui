@@ -1,3 +1,5 @@
+import type { PaginationMeta } from './api';
+
 export interface School {
 	id: string;
 	name: string;
@@ -9,6 +11,14 @@ export interface CreateSchoolDto {
 	address?: string | null;
 }
 
-export interface SchoolsResponse {
-	schools: School[];
+export interface PaginatedSchoolsResponse {
+	data: School[];
+	meta: PaginationMeta;
+}
+
+export interface SchoolQueryParams {
+	name?: string;
+	address?: string;
+	limit?: number;
+	offset?: number;
 }

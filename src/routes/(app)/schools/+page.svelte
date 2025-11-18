@@ -8,15 +8,30 @@
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
 	import DataTable from './data-table.svelte';
 	import { columns } from './columns';
-
-	const schools = useSchools();
-	const createSchool = useCreateSchool();
+	import type { SchoolQueryParams } from '$lib/types/school';
 
 	let showForm = $state(false);
 	let formData = $state({
 		name: '',
 		address: ''
 	});
+
+	let queryParams = $state<SchoolQueryParams>({
+		limit: 10,
+		offset: 0,
+		name: undefined,
+		address: undefined
+	});
+
+	let filterState = $state({
+		name: '',
+		address: ''
+	});
+
+	let showFiltersDropdown = $state(false);
+
+	const schools = $derived(useSchools(queryParams));
+	const createSchool = useCreateSchool();
 
 	function resetForm() {
 		formData = {
@@ -43,6 +58,27 @@
 				}
 			}
 		);
+	}
+
+	function handlePaginationChange(offset: number, limit: number) {
+		queryParams = {
+			...queryParams,
+			offset,
+			limit
+		};
+	}
+
+	function handleFilterChange(filters: { name?: string; address?: string }) {
+		filterState = {
+			name: filters.name || '',
+			address: filters.address || ''
+		};
+		queryParams = {
+			...queryParams,
+			name: filters.name || undefined,
+			address: filters.address || undefined,
+			offset: 0
+		};
 	}
 </script>
 
@@ -106,7 +142,16 @@
 					<p class="text-sm">{schools.error?.message}</p>
 				</div>
 			{:else if schools.data}
-				<DataTable data={schools.data} {columns} />
+				<DataTable
+					data={schools.data.data}
+					meta={schools.data.meta}
+					{columns}
+					onPaginationChange={handlePaginationChange}
+					onFilterChange={handleFilterChange}
+					pageSize={queryParams.limit}
+					initialFilters={filterState}
+					bind:showFilters={showFiltersDropdown}
+				/>
 			{/if}
 		</Card.Content>
 	</Card.Root>
