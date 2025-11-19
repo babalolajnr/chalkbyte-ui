@@ -35,6 +35,7 @@
 	import NavMain from './nav-main.svelte';
 	import NavSecondary from './nav-secondary.svelte';
 	import NavUser from './nav-user.svelte';
+	import ModeToggle from './mode-toggle.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import CommandIcon from '@lucide/svelte/icons/command';
 	import type { ComponentProps } from 'svelte';
@@ -69,6 +70,10 @@
 		<NavSecondary items={data.navSecondary} class="mt-auto" />
 	</Sidebar.Content>
 	<Sidebar.Footer>
+		<div class="flex items-center justify-between gap-2 px-2 py-2">
+			<span class="text-sm text-sidebar-foreground/70">Theme</span>
+			<ModeToggle />
+		</div>
 		<NavUser user={data.user} />
 	</Sidebar.Footer>
 </Sidebar.Root>
