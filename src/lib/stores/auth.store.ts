@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import type { AuthState, User } from '$lib/types/auth';
-import { mfaService } from '$lib/services/mfa.service';
+import { authService } from '$lib/services/auth.service';
 
 const initialState: AuthState = {
 	user: null,
@@ -63,13 +63,14 @@ function createAuthStore() {
 			const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
 			const refreshToken =
 				typeof window !== 'undefined' ? localStorage.getItem('refresh_token') : null;
-			if (token) {
+			if (token && refreshToken) {
 				try {
-					await mfaService.getMFAStatus();
+					const response = await authService.refreshToken();
 					update((state) => ({
 						...state,
-						accessToken: token,
-						refreshToken,
+						user: response.user,
+						accessToken: response.access_token,
+						refreshToken: response.refresh_token,
 						isAuthenticated: true,
 						isLoading: false
 					}));

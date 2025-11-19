@@ -4,6 +4,7 @@
 	import { authStore } from '$lib/stores/auth.store';
 	import { QueryClientProvider } from '@tanstack/svelte-query';
 	import { ModeWatcher } from 'mode-watcher';
+	import { TokenRefresh } from '$lib/components';
 	import { onMount, type Snippet } from 'svelte';
 	import type { LayoutData } from './$types';
 
@@ -19,6 +20,7 @@
 </svelte:head>
 
 <ModeWatcher />
+<TokenRefresh />
 <QueryClientProvider client={data.queryClient}>
 	{@render children()}
 </QueryClientProvider>

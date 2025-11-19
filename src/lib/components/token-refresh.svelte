@@ -1,13 +1,21 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import { setupTokenRefresh } from '$lib/auth-utils';
+	import { authStore } from '$lib/stores/auth.store';
 
 	let cleanup: (() => void) | null = null;
-	const accessToken = localStorage.getItem('access_token');
+	let isAuthenticated = $state(false);
 
-	onMount(() => {
-		if (accessToken) {
+	const unsubscribe = authStore.subscribe((state) => {
+		isAuthenticated = state.isAuthenticated;
+	});
+
+	$effect(() => {
+		if (isAuthenticated && !cleanup) {
 			cleanup = setupTokenRefresh();
+		} else if (!isAuthenticated && cleanup) {
+			cleanup();
+			cleanup = null;
 		}
 	});
 
@@ -15,14 +23,6 @@
 		if (cleanup) {
 			cleanup();
 		}
+		unsubscribe();
 	});
-
-	$: {
-		if (accessToken && !cleanup) {
-			cleanup = setupTokenRefresh();
-		} else if (!accessToken && cleanup) {
-			cleanup();
-			cleanup = null;
-		}
-	}
 </script>
