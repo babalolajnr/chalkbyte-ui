@@ -3,7 +3,10 @@ import type {
 	School,
 	CreateSchoolDto,
 	PaginatedSchoolsResponse,
-	SchoolQueryParams
+	SchoolQueryParams,
+	SchoolFullInfo,
+	PaginatedUsersResponse,
+	UserQueryParams
 } from '$lib/types/school';
 
 class SchoolService extends HttpService {
@@ -33,6 +36,38 @@ class SchoolService extends HttpService {
 		return this.request<void>(`/api/schools/${id}`, true, {
 			method: 'DELETE'
 		});
+	}
+
+	async getSchoolFullInfo(id: string): Promise<SchoolFullInfo> {
+		return this.request<SchoolFullInfo>(`/api/schools/${id}/full-info`, true);
+	}
+
+	async getSchoolStudents(id: string, params?: UserQueryParams): Promise<PaginatedUsersResponse> {
+		const queryParams = new URLSearchParams();
+		if (params?.first_name) queryParams.append('first_name', params.first_name);
+		if (params?.last_name) queryParams.append('last_name', params.last_name);
+		if (params?.email) queryParams.append('email', params.email);
+		if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+		if (params?.offset !== undefined) queryParams.append('offset', params.offset.toString());
+
+		const url = queryParams.toString()
+			? `/api/schools/${id}/students?${queryParams.toString()}`
+			: `/api/schools/${id}/students`;
+		return this.request<PaginatedUsersResponse>(url, true);
+	}
+
+	async getSchoolAdmins(id: string, params?: UserQueryParams): Promise<PaginatedUsersResponse> {
+		const queryParams = new URLSearchParams();
+		if (params?.first_name) queryParams.append('first_name', params.first_name);
+		if (params?.last_name) queryParams.append('last_name', params.last_name);
+		if (params?.email) queryParams.append('email', params.email);
+		if (params?.limit !== undefined) queryParams.append('limit', params.limit.toString());
+		if (params?.offset !== undefined) queryParams.append('offset', params.offset.toString());
+
+		const url = queryParams.toString()
+			? `/api/schools/${id}/admins?${queryParams.toString()}`
+			: `/api/schools/${id}/admins`;
+		return this.request<PaginatedUsersResponse>(url, true);
 	}
 }
 

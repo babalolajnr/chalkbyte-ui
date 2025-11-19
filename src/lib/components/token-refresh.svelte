@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { setupTokenRefresh } from '$lib/auth-utils';
-	import { isAuthenticated } from '$lib/stores/auth.store';
 
 	let cleanup: (() => void) | null = null;
+	const accessToken = localStorage.getItem('access_token');
 
 	onMount(() => {
-		if ($isAuthenticated) {
+		if (accessToken) {
 			cleanup = setupTokenRefresh();
 		}
 	});
@@ -18,9 +18,9 @@
 	});
 
 	$: {
-		if ($isAuthenticated && !cleanup) {
+		if (accessToken && !cleanup) {
 			cleanup = setupTokenRefresh();
-		} else if (!$isAuthenticated && cleanup) {
+		} else if (!accessToken && cleanup) {
 			cleanup();
 			cleanup = null;
 		}

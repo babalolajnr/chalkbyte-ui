@@ -29,14 +29,16 @@ export const columns: ColumnDef<School>[] = [
 		accessorKey: 'name',
 		header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'Name' }),
 		cell: ({ row }) => {
-			const nameSnippet = createRawSnippet<[{ name: string }]>((getName) => {
-				const { name } = getName();
+			const nameSnippet = createRawSnippet<[{ name: string; id: string }]>((getData) => {
+				const { name, id } = getData();
 				return {
-					render: () => `<div class="font-medium">${name}</div>`
+					render: () =>
+						`<a href="/schools/${id}" class="font-medium text-primary hover:underline">${name}</a>`
 				};
 			});
 			return renderSnippet(nameSnippet, {
-				name: row.original.name
+				name: row.original.name,
+				id: row.original.id
 			});
 		},
 		enableSorting: true
