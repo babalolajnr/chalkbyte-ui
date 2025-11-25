@@ -1,5 +1,12 @@
 test-results
+playwright-report
+test-results/
+playwright/.cache/
 node_modules
+
+# Playwright snapshots
+e2e/**/*-snapshots/
+e2e/__screenshots__/
 
 # Output
 .output
