@@ -30,9 +30,12 @@ class MFAService extends HttpService {
 	}
 
 	async verifyMFA(data: MFAVerifyRequest): Promise<MFAVerifyResponse> {
-		const response = await this.request<MFAVerifyResponse>('/api/mfa/verify', false, {
+		const response = await this.request<MFAVerifyResponse>('/api/auth/mfa/verify', false, {
 			method: 'POST',
-			body: JSON.stringify(data)
+			headers: {
+				Authorization: `Bearer ${data.temp_token}`
+			},
+			body: JSON.stringify({ code: data.code, temp_token: data.temp_token })
 		});
 
 		if (response.access_token) {
@@ -49,7 +52,10 @@ class MFAService extends HttpService {
 	async loginWithRecoveryCode(data: RecoveryCodeRequest): Promise<RecoveryCodeResponse> {
 		const response = await this.request<RecoveryCodeResponse>('/api/recovery', false, {
 			method: 'POST',
-			body: JSON.stringify(data)
+			headers: {
+				Authorization: `Bearer ${data.temp_token}`
+			},
+			body: JSON.stringify({ recovery_code: data.recovery_code, temp_token: data.temp_token })
 		});
 
 		if (response.access_token) {
@@ -64,33 +70,33 @@ class MFAService extends HttpService {
 	}
 
 	async enableMFA(): Promise<MFAEnableResponse> {
-		return this.request<MFAEnableResponse>('/api/mfa/enable', false, {
+		return this.request<MFAEnableResponse>('/api/mfa/enable', true, {
 			method: 'POST'
 		});
 	}
 
 	async verifyMFASetup(data: MFAVerifySetupRequest): Promise<MFAVerifySetupResponse> {
-		return this.request<MFAVerifySetupResponse>('/api/mfa/verify-setup', false, {
+		return this.request<MFAVerifySetupResponse>('/api/mfa/verify', true, {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
 	}
 
 	async disableMFA(data: MFADisableRequest): Promise<MFADisableResponse> {
-		return this.request<MFADisableResponse>('/api/mfa/disable', false, {
+		return this.request<MFADisableResponse>('/api/mfa/disable', true, {
 			method: 'POST',
 			body: JSON.stringify(data)
 		});
 	}
 
 	async getMFAStatus(): Promise<MFAStatusResponse> {
-		return this.request<MFAStatusResponse>('/api/mfa/status', false, {
+		return this.request<MFAStatusResponse>('/api/mfa/status', true, {
 			method: 'GET'
 		});
 	}
 
 	async regenerateRecoveryCodes(): Promise<MFARegenerateCodesResponse> {
-		return this.request<MFARegenerateCodesResponse>('/api/mfa/recovery-codes', false, {
+		return this.request<MFARegenerateCodesResponse>('/api/mfa/recovery-codes/regenerate', true, {
 			method: 'POST'
 		});
 	}

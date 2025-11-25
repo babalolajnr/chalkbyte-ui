@@ -2,6 +2,7 @@
 	import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
 	import SendIcon from '@lucide/svelte/icons/send';
 	import SchoolIcon from '@lucide/svelte/icons/school';
+	import SettingsIcon from '@lucide/svelte/icons/settings';
 
 	const data = {
 		user: {
@@ -14,6 +15,11 @@
 				title: 'Schools',
 				url: '/schools',
 				icon: SchoolIcon
+			},
+			{
+				title: 'Settings',
+				url: '/settings',
+				icon: SettingsIcon
 			}
 		],
 		navSecondary: [

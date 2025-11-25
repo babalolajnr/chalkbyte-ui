@@ -75,6 +75,7 @@ export interface LogoutResponse {
 
 export interface MFAEnableResponse {
 	qr_code_url: string;
+	qr_code_base64: string;
 	secret: string;
 	manual_entry_key: string;
 }

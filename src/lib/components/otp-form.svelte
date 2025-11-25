@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import * as InputOTP from '$lib/components/ui/input-otp/index.js';
+	import * as Alert from '$lib/components/ui/alert/index.js';
 	import type { HTMLAttributes } from 'svelte/elements';
 	import { useVerifyMFA, useLoginWithRecoveryCode } from '$lib/queries/auth.queries';
 	import { authStore } from '$lib/stores/auth.store';
@@ -82,14 +83,14 @@
 				<Field.Description>
 					{showRecoveryCodeInput
 						? 'Enter one of your recovery codes to complete login'
-						: 'We sent a 6-digit code to your authenticator app'}
+						: 'Enter the 6-digit code from your authenticator app'}
 				</Field.Description>
 			</div>
 
 			{#if error}
-				<div class="rounded-md bg-red-50 p-3 text-sm text-red-800">
-					{error}
-				</div>
+				<Alert.Root variant="destructive">
+					<Alert.Description>{error}</Alert.Description>
+				</Alert.Root>
 			{/if}
 
 			{#if showRecoveryCodeInput}
