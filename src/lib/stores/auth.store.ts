@@ -91,7 +91,7 @@ function createAuthStore() {
 
 export const authStore = createAuthStore();
 
-// export const isAuthenticated = derived(authStore, ($auth) => $auth.isAuthenticated);
+export const isAuthenticated = derived(authStore, ($auth) => $auth.isAuthenticated);
 export const currentUser = derived(authStore, ($auth) => $auth.user);
 // export const isLoading = derived(authStore, ($auth) => $auth.isLoading);
 export const mfaRequired = derived(authStore, ($auth) => $auth.mfaRequired);
