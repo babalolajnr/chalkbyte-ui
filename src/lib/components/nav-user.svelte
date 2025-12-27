@@ -1,18 +1,19 @@
 <script lang="ts">
-	import BadgeCheckIcon from "@lucide/svelte/icons/badge-check";
-	import BellIcon from "@lucide/svelte/icons/bell";
-	import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
-	import CreditCardIcon from "@lucide/svelte/icons/credit-card";
-	import LogOutIcon from "@lucide/svelte/icons/log-out";
-	import SparklesIcon from "@lucide/svelte/icons/sparkles";
+	import BadgeCheckIcon from '@lucide/svelte/icons/badge-check';
+	import BellIcon from '@lucide/svelte/icons/bell';
+	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import CreditCardIcon from '@lucide/svelte/icons/credit-card';
+	import LogOutIcon from '@lucide/svelte/icons/log-out';
+	import SparklesIcon from '@lucide/svelte/icons/sparkles';
 
-	import * as Avatar from "$lib/components/ui/avatar/index.js";
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-	import { useSidebar } from "$lib/components/ui/sidebar/index.js";
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
+	import { useLogout } from '$lib/queries/auth.queries';
 
 	let {
-		user,
+		user
 	}: {
 		user: {
 			name: string;
@@ -22,6 +23,11 @@
 	} = $props();
 
 	const sidebar = useSidebar();
+	const logoutMutation = useLogout();
+
+	function handleLogout() {
+		logoutMutation.mutate();
+	}
 </script>
 
 <Sidebar.Menu>
@@ -48,7 +54,7 @@
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content
 				class="w-(--bits-dropdown-menu-anchor-width) min-w-56 rounded-lg"
-				side={sidebar.isMobile ? "bottom" : "right"}
+				side={sidebar.isMobile ? 'bottom' : 'right'}
 				align="end"
 				sideOffset={4}
 			>
@@ -87,9 +93,9 @@
 					</DropdownMenu.Item>
 				</DropdownMenu.Group>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item>
+				<DropdownMenu.Item onclick={handleLogout} disabled={logoutMutation.isPending}>
 					<LogOutIcon />
-					Log out
+					{logoutMutation.isPending ? 'Logging out...' : 'Log out'}
 				</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>

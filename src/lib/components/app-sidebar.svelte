@@ -2,6 +2,7 @@
 	import LifeBuoyIcon from '@lucide/svelte/icons/life-buoy';
 	import SendIcon from '@lucide/svelte/icons/send';
 	import SchoolIcon from '@lucide/svelte/icons/school';
+	import LayersIcon from '@lucide/svelte/icons/layers';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 
 	const data = {
@@ -15,6 +16,11 @@
 				title: 'Schools',
 				url: '/schools',
 				icon: SchoolIcon
+			},
+			{
+				title: 'Levels',
+				url: '/levels',
+				icon: LayersIcon
 			},
 			{
 				title: 'Settings',

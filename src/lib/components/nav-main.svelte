@@ -2,7 +2,6 @@
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-	import { resolve } from '$app/paths';
 
 	let {
 		items
@@ -31,7 +30,7 @@
 					<Sidebar.MenuItem {...props}>
 						<Sidebar.MenuButton tooltipContent={mainItem.title}>
 							{#snippet child({ props })}
-								<a href={resolve(mainItem.url)} {...props}>
+								<a href={mainItem.url} {...props}>
 									<mainItem.icon />
 									<span>{mainItem.title}</span>
 								</a>
@@ -50,7 +49,7 @@
 								<Sidebar.MenuSub>
 									{#each mainItem.items as subItem (subItem.title)}
 										<Sidebar.MenuSubItem>
-											<Sidebar.MenuSubButton href={resolve(subItem.url)}>
+											<Sidebar.MenuSubButton href={subItem.url}>
 												<span>{subItem.title}</span>
 											</Sidebar.MenuSubButton>
 										</Sidebar.MenuSubItem>
