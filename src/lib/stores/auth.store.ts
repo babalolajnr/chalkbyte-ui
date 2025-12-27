@@ -1,6 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import type { AuthState, User } from '$lib/types/auth';
 import { authService } from '$lib/services/auth.service';
+import { permissionsStore } from './permissions.store';
 
 const initialState: AuthState = {
 	user: null,
@@ -16,7 +17,7 @@ function createAuthStore() {
 
 	return {
 		subscribe,
-		setUser: (user: User, accessToken: string, refreshToken?: string) => {
+		setUser: async (user: User, accessToken: string, refreshToken?: string) => {
 			if (typeof window !== 'undefined') {
 				localStorage.setItem('access_token', accessToken);
 				if (refreshToken) {
@@ -33,6 +34,8 @@ function createAuthStore() {
 				tempToken: null,
 				mfaRequired: false
 			}));
+			// Load user permissions and roles after authentication
+			await permissionsStore.loadUserPermissionsAndRoles(user.id);
 		},
 		setMFARequired: (tempToken: string) => {
 			update((state) => ({
@@ -57,6 +60,7 @@ function createAuthStore() {
 				localStorage.removeItem('access_token');
 				localStorage.removeItem('refresh_token');
 			}
+			permissionsStore.reset();
 			set(initialState);
 		},
 		initialize: async () => {
@@ -74,6 +78,8 @@ function createAuthStore() {
 						isAuthenticated: true,
 						isLoading: false
 					}));
+					// Load user permissions and roles after token refresh
+					await permissionsStore.loadUserPermissionsAndRoles(response.user.id);
 				} catch {
 					if (typeof window !== 'undefined') {
 						localStorage.removeItem('access_token');
@@ -85,7 +91,10 @@ function createAuthStore() {
 				update((state) => ({ ...state, isLoading: false }));
 			}
 		},
-		reset: () => set(initialState)
+		reset: () => {
+			permissionsStore.reset();
+			set(initialState);
+		}
 	};
 }
 
