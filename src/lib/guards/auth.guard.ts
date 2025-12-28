@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import { authStore } from '$lib/stores/auth.store';
+import { hasAnyRole } from '$lib/stores/permissions.store';
 import { get } from 'svelte/store';
 
 export function requireAuth() {
@@ -33,7 +34,7 @@ export function requireRole(allowedRoles: string[]) {
 		return false;
 	}
 
-	if (auth.user && !allowedRoles.includes(auth.user.role)) {
+	if (!hasAnyRole(allowedRoles)) {
 		goto(resolve('/'));
 		return false;
 	}

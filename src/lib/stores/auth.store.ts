@@ -1,5 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import type { AuthState, User } from '$lib/types/auth';
+import type { Permission, CustomRoleWithPermissions } from '$lib/types/roles';
 import { authService } from '$lib/services/auth.service';
 import { permissionsStore } from './permissions.store';
 
@@ -17,7 +18,13 @@ function createAuthStore() {
 
 	return {
 		subscribe,
-		setUser: async (user: User, accessToken: string, refreshToken?: string) => {
+		setUser: (
+			user: User,
+			accessToken: string,
+			refreshToken?: string,
+			roles?: CustomRoleWithPermissions[],
+			permissions?: Permission[]
+		) => {
 			if (typeof window !== 'undefined') {
 				localStorage.setItem('access_token', accessToken);
 				if (refreshToken) {
@@ -34,8 +41,11 @@ function createAuthStore() {
 				tempToken: null,
 				mfaRequired: false
 			}));
-			// Load user permissions and roles after authentication
-			await permissionsStore.loadUserPermissionsAndRoles(user.id);
+			// Set permissions and roles directly from login response if provided
+			if (permissions && roles) {
+				permissionsStore.setPermissions(permissions);
+				permissionsStore.setRoles(roles);
+			}
 		},
 		setMFARequired: (tempToken: string) => {
 			update((state) => ({
@@ -78,8 +88,11 @@ function createAuthStore() {
 						isAuthenticated: true,
 						isLoading: false
 					}));
-					// Load user permissions and roles after token refresh
-					await permissionsStore.loadUserPermissionsAndRoles(response.user.id);
+					// Set permissions and roles from refresh response
+					if (response.permissions && response.roles) {
+						permissionsStore.setPermissions(response.permissions);
+						permissionsStore.setRoles(response.roles);
+					}
 				} catch {
 					if (typeof window !== 'undefined') {
 						localStorage.removeItem('access_token');

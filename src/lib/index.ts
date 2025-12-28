@@ -37,3 +37,29 @@ export { useRoles, UseRoles } from './hooks/use-roles.svelte';
 export { usePermissions, UsePermissions } from './hooks/use-permissions.svelte';
 export * from './types/roles';
 export * from './queries/roles.queries';
+
+// Permission Guards exports
+export {
+	canAccessRoute,
+	canAccessFeature,
+	requirePermission,
+	requireAnyPermission,
+	requireRoleGuard,
+	guardRoute,
+	guardFeature
+} from './guards/permission.guard';
+export * from './types/permissions';
+
+// Access Control Components
+export { PermissionGuard, RoleGuard, FeatureGuard } from './components/access-control';
+
+// Permission Checking Hooks
+export {
+	usePermissions as usePermissionChecks,
+	createPermissionCheck as createPermissionCheckStore,
+	createAnyPermissionCheck as createAnyPermissionCheckStore,
+	createAllPermissionsCheck as createAllPermissionsCheckStore,
+	createRoleCheck as createRoleCheckStore,
+	createFeatureCheck,
+	createRouteCheck
+} from './hooks/use-permission-checks.svelte';

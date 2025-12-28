@@ -1,10 +1,17 @@
+import type { Permission, CustomRoleWithPermissions } from './roles';
+
 export interface User {
 	id: string;
 	email: string;
 	first_name: string;
 	last_name: string;
-	role: 'admin' | 'teacher' | 'student';
-	school_id: string;
+	school_id: string | null;
+	level_id: string | null;
+	branch_id: string | null;
+	date_of_birth: string | null;
+	grade_level: string | null;
+	created_at: string;
+	updated_at: string;
 }
 
 export interface LoginRequest {
@@ -16,6 +23,8 @@ export interface LoginResponse {
 	access_token?: string;
 	refresh_token?: string;
 	user?: User;
+	roles?: CustomRoleWithPermissions[];
+	permissions?: Permission[];
 	mfa_required?: boolean;
 	temp_token?: string;
 }
@@ -29,6 +38,8 @@ export interface MFAVerifyResponse {
 	access_token: string;
 	refresh_token: string;
 	user: User;
+	roles: CustomRoleWithPermissions[];
+	permissions: Permission[];
 }
 
 export interface RecoveryCodeRequest {
@@ -40,6 +51,8 @@ export interface RecoveryCodeResponse {
 	access_token: string;
 	refresh_token: string;
 	user: User;
+	roles: CustomRoleWithPermissions[];
+	permissions: Permission[];
 }
 
 export interface PasswordResetRequest {
@@ -67,6 +80,8 @@ export interface RefreshTokenResponse {
 	access_token: string;
 	refresh_token: string;
 	user: User;
+	roles: CustomRoleWithPermissions[];
+	permissions: Permission[];
 }
 
 export interface LogoutResponse {

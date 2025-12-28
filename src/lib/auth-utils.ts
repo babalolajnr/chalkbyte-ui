@@ -1,18 +1,23 @@
 import type { User } from '$lib/types/auth';
 import { authService } from '$lib/services/auth.service';
 import { authStore } from '$lib/stores/auth.store';
+import {
+	hasRole as storeHasRole,
+	hasAnyRole as storeHasAnyRole
+} from '$lib/stores/permissions.store';
 
 /**
- * Check if a user has a specific role
+ * Check if a user has a specific role (uses permissions store)
  */
-export function hasRole(user: User | null, role: string | string[]): boolean {
-	if (!user) return false;
+export function hasRole(roleName: string): boolean {
+	return storeHasRole(roleName);
+}
 
-	if (Array.isArray(role)) {
-		return role.includes(user.role);
-	}
-
-	return user.role === role;
+/**
+ * Check if a user has any of the specified roles
+ */
+export function hasAnyRole(roleNames: string[]): boolean {
+	return storeHasAnyRole(roleNames);
 }
 
 /**
@@ -62,7 +67,13 @@ export async function autoRefreshToken(): Promise<boolean> {
 
 	try {
 		const response = await authService.refreshToken();
-		authStore.setUser(response.user, response.access_token, response.refresh_token);
+		authStore.setUser(
+			response.user,
+			response.access_token,
+			response.refresh_token,
+			response.roles,
+			response.permissions
+		);
 		return true;
 	} catch {
 		authStore.logout();
@@ -83,24 +94,31 @@ export function setupTokenRefresh(intervalMs: number = 4 * 60 * 1000): () => voi
 }
 
 /**
- * Check if a user is an admin
+ * Check if user has System Admin role
  */
-export function isAdmin(user: User | null): boolean {
-	return hasRole(user, 'admin');
+export function isSystemAdmin(): boolean {
+	return hasRole('System Admin');
 }
 
 /**
- * Check if a user is a teacher
+ * Check if user has any admin-level role
  */
-export function isTeacher(user: User | null): boolean {
-	return hasRole(user, 'teacher');
+export function isAdmin(): boolean {
+	return hasAnyRole(['System Admin', 'School Admin', 'Admin']);
 }
 
 /**
- * Check if a user is a student
+ * Check if user has Teacher role
  */
-export function isStudent(user: User | null): boolean {
-	return hasRole(user, 'student');
+export function isTeacher(): boolean {
+	return hasRole('Teacher');
+}
+
+/**
+ * Check if user has Student role
+ */
+export function isStudent(): boolean {
+	return hasRole('Student');
 }
 
 /**

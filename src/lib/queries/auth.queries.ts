@@ -38,7 +38,13 @@ export function useLogin() {
 				authStore.setMFARequired(response.temp_token);
 				await goto(resolve('/otp'));
 			} else if (response.access_token && response.user) {
-				authStore.setUser(response.user, response.access_token, response.refresh_token);
+				authStore.setUser(
+					response.user,
+					response.access_token,
+					response.refresh_token,
+					response.roles,
+					response.permissions
+				);
 				await goto(resolve('/dashboard'));
 			}
 		}
@@ -50,7 +56,13 @@ export function useVerifyMFA() {
 		mutationFn: (data: MFAVerifyRequest) => mfaService.verifyMFA(data),
 		onSuccess: async (response) => {
 			if (response.access_token && response.user) {
-				authStore.setUser(response.user, response.access_token, response.refresh_token);
+				authStore.setUser(
+					response.user,
+					response.access_token,
+					response.refresh_token,
+					response.roles,
+					response.permissions
+				);
 				authStore.clearMFARequired();
 				await goto(resolve('/dashboard'));
 			}
@@ -63,7 +75,13 @@ export function useLoginWithRecoveryCode() {
 		mutationFn: (data: RecoveryCodeRequest) => mfaService.loginWithRecoveryCode(data),
 		onSuccess: async (response) => {
 			if (response.access_token && response.user) {
-				authStore.setUser(response.user, response.access_token, response.refresh_token);
+				authStore.setUser(
+					response.user,
+					response.access_token,
+					response.refresh_token,
+					response.roles,
+					response.permissions
+				);
 				authStore.clearMFARequired();
 				await goto(resolve('/dashboard'));
 			}
@@ -128,7 +146,13 @@ export function useRefreshToken() {
 	return createMutation(() => ({
 		mutationFn: () => authService.refreshToken(),
 		onSuccess: (response) => {
-			authStore.setUser(response.user, response.access_token, response.refresh_token);
+			authStore.setUser(
+				response.user,
+				response.access_token,
+				response.refresh_token,
+				response.roles,
+				response.permissions
+			);
 		},
 		onError: () => {
 			authStore.logout();

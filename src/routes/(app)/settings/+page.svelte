@@ -2,6 +2,7 @@
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { userService } from '$lib/services/user.service';
 	import { mfaService } from '$lib/services/mfa.service';
+	import { userRoles } from '$lib/stores/permissions.store';
 	import { toast } from 'svelte-sonner';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
@@ -296,12 +297,11 @@
 								<Input id="email" type="email" value={userProfileQuery.data.user.email} disabled />
 							</div>
 							<div class="grid gap-2">
-								<Label for="role">Role</Label>
+								<Label for="role">Role(s)</Label>
 								<Input
 									id="role"
-									value={userProfileQuery.data.user.role}
+									value={$userRoles.map((r) => r.name).join(', ') || 'No roles assigned'}
 									disabled
-									class="capitalize"
 								/>
 							</div>
 							{#if userProfileQuery.data.school}
