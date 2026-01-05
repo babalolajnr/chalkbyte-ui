@@ -359,7 +359,6 @@
 								<Table.Row>
 									<Table.Head>Name</Table.Head>
 									<Table.Head>Email</Table.Head>
-									<Table.Head>Role</Table.Head>
 								</Table.Row>
 							</Table.Header>
 							<Table.Body>
@@ -369,7 +368,6 @@
 											>{student.first_name} {student.last_name}</Table.Cell
 										>
 										<Table.Cell>{student.email}</Table.Cell>
-										<Table.Cell class="capitalize">{student.role.replace('_', ' ')}</Table.Cell>
 									</Table.Row>
 								{/each}
 							</Table.Body>
@@ -486,7 +484,6 @@
 								<Table.Row>
 									<Table.Head>Name</Table.Head>
 									<Table.Head>Email</Table.Head>
-									<Table.Head>Role</Table.Head>
 								</Table.Row>
 							</Table.Header>
 							<Table.Body>
@@ -495,7 +492,6 @@
 										<Table.Cell class="font-medium">{admin.first_name} {admin.last_name}</Table.Cell
 										>
 										<Table.Cell>{admin.email}</Table.Cell>
-										<Table.Cell class="capitalize">{admin.role.replace('_', ' ')}</Table.Cell>
 									</Table.Row>
 								{/each}
 							</Table.Body>
