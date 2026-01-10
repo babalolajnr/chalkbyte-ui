@@ -10,6 +10,8 @@
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
 	import SchoolIcon from '@lucide/svelte/icons/school';
 	import ShieldIcon from '@lucide/svelte/icons/shield';
+	import LayersIcon from '@lucide/svelte/icons/layers';
+	import GitBranchIcon from '@lucide/svelte/icons/git-branch';
 
 	let {
 		open = $bindable(false),
@@ -102,7 +104,27 @@
 						<div>
 							<p class="text-sm font-medium">School</p>
 							<p class="text-sm text-muted-foreground">
-								{user.school_id ? 'Assigned' : 'No school assigned'}
+								{user.school?.name ?? 'No school assigned'}
+							</p>
+						</div>
+					</div>
+
+					<div class="flex items-start gap-3">
+						<LayersIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
+						<div>
+							<p class="text-sm font-medium">Level</p>
+							<p class="text-sm text-muted-foreground">
+								{user.level?.name ?? 'Not assigned'}
+							</p>
+						</div>
+					</div>
+
+					<div class="flex items-start gap-3">
+						<GitBranchIcon class="mt-0.5 h-4 w-4 text-muted-foreground" />
+						<div>
+							<p class="text-sm font-medium">Branch</p>
+							<p class="text-sm text-muted-foreground">
+								{user.branch?.name ?? 'Not assigned'}
 							</p>
 						</div>
 					</div>

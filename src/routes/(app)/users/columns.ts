@@ -36,7 +36,9 @@ export function createColumns(callbacks?: ColumnCallbacks): ColumnDef<User>[] {
 			accessorKey: 'name',
 			header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'Name' }),
 			cell: ({ row }) => {
-				const nameSnippet = createRawSnippet<[{ firstName: string; lastName: string; email: string }]>((getData) => {
+				const nameSnippet = createRawSnippet<
+					[{ firstName: string; lastName: string; email: string }]
+				>((getData) => {
 					const { firstName, lastName, email } = getData();
 					const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 					return {
@@ -67,8 +69,7 @@ export function createColumns(callbacks?: ColumnCallbacks): ColumnDef<User>[] {
 				const emailSnippet = createRawSnippet<[{ email: string }]>((getData) => {
 					const { email } = getData();
 					return {
-						render: () =>
-							`<div class="max-w-[200px] truncate">${email}</div>`
+						render: () => `<div class="max-w-[200px] truncate">${email}</div>`
 					};
 				});
 				return renderSnippet(emailSnippet, {
@@ -79,18 +80,34 @@ export function createColumns(callbacks?: ColumnCallbacks): ColumnDef<User>[] {
 			enableHiding: true
 		},
 		{
-			accessorKey: 'school_id',
+			accessorKey: 'school',
 			header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'School' }),
 			cell: ({ row }) => {
-				const schoolSnippet = createRawSnippet<[{ schoolId: string | null }]>((getData) => {
-					const { schoolId } = getData();
+				const schoolSnippet = createRawSnippet<[{ schoolName: string | null }]>((getData) => {
+					const { schoolName } = getData();
 					return {
 						render: () =>
-							`<span class="text-sm ${schoolId ? '' : 'text-muted-foreground'}">${schoolId ? 'Assigned' : 'No school'}</span>`
+							`<span class="text-sm ${schoolName ? '' : 'text-muted-foreground'}">${schoolName ?? 'No school'}</span>`
 					};
 				});
 				return renderSnippet(schoolSnippet, {
-					schoolId: row.original.school_id
+					schoolName: row.original.school?.name ?? null
+				});
+			},
+			enableSorting: false
+		},
+		{
+			accessorKey: 'roles',
+			header: ({ column }) => renderComponent(DataTableColumnHeader, { column, title: 'Roles' }),
+			cell: ({ row }) => {
+				const rolesSnippet = createRawSnippet<[{ roles: string }]>((getData) => {
+					const { roles } = getData();
+					return {
+						render: () => `<span class="text-sm">${roles}</span>`
+					};
+				});
+				return renderSnippet(rolesSnippet, {
+					roles: row.original.roles.map((r) => r.name).join(', ') || 'No roles'
 				});
 			},
 			enableSorting: false
@@ -107,8 +124,7 @@ export function createColumns(callbacks?: ColumnCallbacks): ColumnDef<User>[] {
 						day: 'numeric'
 					});
 					return {
-						render: () =>
-							`<span class="text-sm text-muted-foreground">${formatted}</span>`
+						render: () => `<span class="text-sm text-muted-foreground">${formatted}</span>`
 					};
 				});
 				return renderSnippet(dateSnippet, {

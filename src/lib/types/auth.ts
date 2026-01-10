@@ -1,15 +1,17 @@
 import type { Permission, CustomRoleWithPermissions } from './roles';
+import type { UserSchool, UserLevel, UserBranch, UserRole } from './user';
 
 export interface User {
 	id: string;
 	email: string;
 	first_name: string;
 	last_name: string;
-	school_id: string | null;
-	level_id: string | null;
-	branch_id: string | null;
 	date_of_birth: string | null;
 	grade_level: string | null;
+	school: UserSchool | null;
+	level: UserLevel | null;
+	branch: UserBranch | null;
+	roles: UserRole[];
 	created_at: string;
 	updated_at: string;
 }

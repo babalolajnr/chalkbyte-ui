@@ -6,7 +6,6 @@
 	import * as Card from '$lib/components/ui/card';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
-	import UsersIcon from '@lucide/svelte/icons/users';
 	import DataTable from './data-table.svelte';
 	import { createColumns } from './columns';
 	import type { UserQueryParams, User } from '$lib/types/user';
@@ -143,10 +142,7 @@
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="flex items-center gap-2 text-3xl font-bold tracking-tight">
-				<UsersIcon class="h-8 w-8" />
-				User Management
-			</h1>
+			<h1 class="flex items-center gap-2 text-3xl font-bold tracking-tight">User Management</h1>
 			<p class="text-muted-foreground">Manage users, assign roles, and configure permissions</p>
 		</div>
 		<Button onclick={() => (showForm = !showForm)}>

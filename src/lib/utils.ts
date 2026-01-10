@@ -157,7 +157,7 @@ export function sortUsersByCreatedAt(users: User[], direction: 'asc' | 'desc' = 
 export function groupUsersBySchool(users: User[]): Record<string, User[]> {
 	return users.reduce(
 		(acc, user) => {
-			const schoolId = user.school_id || 'no_school';
+			const schoolId = user.school?.id || 'no_school';
 			if (!acc[schoolId]) {
 				acc[schoolId] = [];
 			}
