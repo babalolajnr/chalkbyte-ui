@@ -4,6 +4,7 @@
 	import SchoolIcon from '@lucide/svelte/icons/school';
 	import LayersIcon from '@lucide/svelte/icons/layers';
 	import ShieldIcon from '@lucide/svelte/icons/shield';
+	import UsersIcon from '@lucide/svelte/icons/users';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 
 	const data = {
@@ -27,6 +28,11 @@
 				title: 'Roles',
 				url: '/roles',
 				icon: ShieldIcon
+			},
+			{
+				title: 'Users',
+				url: '/users',
+				icon: UsersIcon
 			},
 			{
 				title: 'Settings',
