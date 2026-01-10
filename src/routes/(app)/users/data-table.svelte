@@ -299,13 +299,18 @@
 			</div>
 		{/if}
 	</div>
-	<div class="rounded-md border">
-		<Table.Root>
+	<div class="overflow-x-auto rounded-md border">
+		<Table.Root class="w-full table-fixed">
 			<Table.Header>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<Table.Row>
 						{#each headerGroup.headers as header (header.id)}
-							<Table.Head class="[&:has([role=checkbox])]:pl-3">
+							<Table.Head
+								class="[&:has([role=checkbox])]:pl-3"
+								style={header.column.getSize() !== 150
+									? `width: ${header.column.getSize()}px`
+									: undefined}
+							>
 								{#if !header.isPlaceholder}
 									<FlexRender
 										content={header.column.columnDef.header}
@@ -321,7 +326,7 @@
 				{#each table.getRowModel().rows as row (row.id)}
 					<Table.Row data-state={row.getIsSelected() && 'selected'}>
 						{#each row.getVisibleCells() as cell (cell.id)}
-							<Table.Cell class="[&:has([role=checkbox])]:pl-3">
+							<Table.Cell class="overflow-hidden [&:has([role=checkbox])]:pl-3">
 								<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
 							</Table.Cell>
 						{/each}
