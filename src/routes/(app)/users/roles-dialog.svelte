@@ -13,6 +13,9 @@
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
 	import ShieldIcon from '@lucide/svelte/icons/shield';
 	import type { CustomRoleWithPermissions } from '$lib/types/roles';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
+	import { Roles } from '$lib/authorization';
 
 	let {
 		open = $bindable(false),
@@ -30,6 +33,8 @@
 
 	const userRoles = $derived(user ? useUserRoles(user.id) : null);
 	const userRoleIds = $derived(userRoles?.data?.map((r: CustomRoleWithPermissions) => r.id) || []);
+
+	const canAssignRoles = $derived(Roles.canAssign());
 
 	let pendingChanges = new SvelteMap<string, 'add' | 'remove'>();
 	let isSaving = $state(false);
@@ -50,6 +55,8 @@
 	}
 
 	function toggleRole(roleId: string) {
+		if (!canAssignRoles) return;
+
 		const currentlyAssigned = userRoleIds.includes(roleId);
 		const pending = pendingChanges.get(roleId);
 
@@ -70,7 +77,7 @@
 	}
 
 	async function handleSave() {
-		if (!user || pendingChanges.size === 0) return;
+		if (!user || pendingChanges.size === 0 || !canAssignRoles) return;
 
 		isSaving = true;
 		try {
@@ -132,73 +139,82 @@
 		</Dialog.Header>
 
 		<div class="py-4">
-			{#if roles.isLoading || userRoles?.isLoading}
-				<div class="flex items-center justify-center py-8">
-					<Loader2Icon class="h-8 w-8 animate-spin text-muted-foreground" />
-				</div>
-			{:else if roles.isError || userRoles?.isError}
-				<div class="py-8 text-center text-destructive">
-					<p>Error loading roles</p>
-				</div>
-			{:else if roles.data?.data && roles.data.data.length > 0}
-				<div class="max-h-[400px] space-y-2 overflow-y-auto">
-					{#each roles.data.data as role (role.id)}
-						{@const assigned = isRoleAssigned(role.id)}
-						{@const pending = pendingChanges.get(role.id)}
-						<div
-							class="flex items-center gap-3 rounded-md border p-3 transition-colors {pending
-								? 'border-primary/50 bg-muted/50'
-								: ''}"
-						>
-							<Checkbox
-								checked={assigned}
-								onCheckedChange={() => toggleRole(role.id)}
-								disabled={isSaving}
-							/>
-							<div class="flex flex-1 flex-col">
-								<div class="flex items-center gap-2">
-									<span class="font-medium">{role.name}</span>
-									{#if role.is_system_role}
-										<span
-											class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-										>
-											System
-										</span>
-									{/if}
-									{#if pending}
-										<span
-											class="rounded-full px-2 py-0.5 text-xs font-medium {pending === 'add'
-												? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-												: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}"
-										>
-											{pending === 'add' ? 'Will be added' : 'Will be removed'}
-										</span>
+			<Authorize permission={SystemPermission.ROLES_ASSIGN}>
+				{#if roles.isLoading || userRoles?.isLoading}
+					<div class="flex items-center justify-center py-8">
+						<Loader2Icon class="h-8 w-8 animate-spin text-muted-foreground" />
+					</div>
+				{:else if roles.isError || userRoles?.isError}
+					<div class="py-8 text-center text-destructive">
+						<p>Error loading roles</p>
+					</div>
+				{:else if roles.data?.data && roles.data.data.length > 0}
+					<div class="max-h-100 space-y-2 overflow-y-auto">
+						{#each roles.data.data as role (role.id)}
+							{@const assigned = isRoleAssigned(role.id)}
+							{@const pending = pendingChanges.get(role.id)}
+							<div
+								class="flex items-center gap-3 rounded-md border p-3 transition-colors {pending
+									? 'border-primary/50 bg-muted/50'
+									: ''}"
+							>
+								<Checkbox
+									checked={assigned}
+									onCheckedChange={() => toggleRole(role.id)}
+									disabled={isSaving}
+								/>
+								<div class="flex flex-1 flex-col">
+									<div class="flex items-center gap-2">
+										<span class="font-medium">{role.name}</span>
+										{#if role.is_system_role}
+											<span
+												class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+											>
+												System
+											</span>
+										{/if}
+										{#if pending}
+											<span
+												class="rounded-full px-2 py-0.5 text-xs font-medium {pending === 'add'
+													? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+													: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}"
+											>
+												{pending === 'add' ? 'Will be added' : 'Will be removed'}
+											</span>
+										{/if}
+									</div>
+									{#if role.description}
+										<span class="text-sm text-muted-foreground">{role.description}</span>
 									{/if}
 								</div>
-								{#if role.description}
-									<span class="text-sm text-muted-foreground">{role.description}</span>
-								{/if}
 							</div>
-						</div>
-					{/each}
-				</div>
-			{:else}
-				<div class="py-8 text-center text-muted-foreground">
-					<p>No roles available</p>
-				</div>
-			{/if}
+						{/each}
+					</div>
+				{:else}
+					<div class="py-8 text-center text-muted-foreground">
+						<p>No roles available</p>
+					</div>
+				{/if}
+				{#snippet fallback()}
+					<div class="py-8 text-center text-muted-foreground">
+						<p>You don't have permission to manage user roles.</p>
+					</div>
+				{/snippet}
+			</Authorize>
 		</div>
 
 		<Dialog.Footer>
 			<Button type="button" variant="outline" onclick={handleClose} disabled={isSaving}>
 				Cancel
 			</Button>
-			<Button onclick={handleSave} disabled={isSaving || !hasChanges}>
-				{#if isSaving}
-					<Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
-				{/if}
-				Save Changes
-			</Button>
+			<Authorize permission={SystemPermission.ROLES_ASSIGN}>
+				<Button onclick={handleSave} disabled={isSaving || !hasChanges}>
+					{#if isSaving}
+						<Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
+					{/if}
+					Save Changes
+				</Button>
+			</Authorize>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

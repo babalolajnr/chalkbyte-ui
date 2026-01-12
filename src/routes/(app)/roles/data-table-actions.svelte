@@ -8,6 +8,8 @@
 	import ShieldIcon from '@lucide/svelte/icons/shield';
 	import { useDeleteRole } from '$lib/queries/roles.queries';
 	import type { CustomRoleWithPermissions } from '$lib/types/roles';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
 
 	type ActionsProps = {
 		role: CustomRoleWithPermissions;
@@ -49,26 +51,32 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="end">
 		<DropdownMenu.Label>Actions</DropdownMenu.Label>
-		<DropdownMenu.Item onclick={handleEdit}>
-			<PencilIcon class="mr-2 h-4 w-4" />
-			Edit Role
-		</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={handleManagePermissions}>
-			<ShieldIcon class="mr-2 h-4 w-4" />
-			Manage Permissions
-		</DropdownMenu.Item>
+		<Authorize permission={SystemPermission.ROLES_UPDATE}>
+			<DropdownMenu.Item onclick={handleEdit}>
+				<PencilIcon class="mr-2 h-4 w-4" />
+				Edit Role
+			</DropdownMenu.Item>
+		</Authorize>
+		<Authorize permission={SystemPermission.ROLES_MANAGE}>
+			<DropdownMenu.Item onclick={handleManagePermissions}>
+				<ShieldIcon class="mr-2 h-4 w-4" />
+				Manage Permissions
+			</DropdownMenu.Item>
+		</Authorize>
 		<DropdownMenu.Item onclick={handleCopyId}>
 			<CopyIcon class="mr-2 h-4 w-4" />
 			Copy ID
 		</DropdownMenu.Item>
-		<DropdownMenu.Separator />
-		<DropdownMenu.Item
-			onclick={handleDelete}
-			class="text-destructive"
-			disabled={role.is_system_role}
-		>
-			<Trash2Icon class="mr-2 h-4 w-4" />
-			Delete
-		</DropdownMenu.Item>
+		<Authorize permission={SystemPermission.ROLES_DELETE}>
+			<DropdownMenu.Separator />
+			<DropdownMenu.Item
+				onclick={handleDelete}
+				class="text-destructive"
+				disabled={role.is_system_role}
+			>
+				<Trash2Icon class="mr-2 h-4 w-4" />
+				Delete
+			</DropdownMenu.Item>
+		</Authorize>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

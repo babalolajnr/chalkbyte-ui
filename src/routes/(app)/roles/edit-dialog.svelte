@@ -14,6 +14,8 @@
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import { zod4 } from 'sveltekit-superforms/adapters';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
 
 	let {
 		open = $bindable(false),
@@ -83,45 +85,60 @@
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<form method="POST" use:enhance class="space-y-4 py-4">
-			<Form.Field {form} name="name">
-				<Form.Control>
-					{#snippet children({ props }: { props: ControlAttrs })}
-						<Form.Label>Name</Form.Label>
-						<Input {...props} bind:value={$formData.name} placeholder="Enter role name" />
-					{/snippet}
-				</Form.Control>
-				<Form.Description>The name of the role</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
+		<Authorize permission={SystemPermission.ROLES_UPDATE}>
+			<form method="POST" use:enhance class="space-y-4 py-4">
+				<Form.Field {form} name="name">
+					<Form.Control>
+						{#snippet children({ props }: { props: ControlAttrs })}
+							<Form.Label>Name</Form.Label>
+							<Input {...props} bind:value={$formData.name} placeholder="Enter role name" />
+						{/snippet}
+					</Form.Control>
+					<Form.Description>The name of the role</Form.Description>
+					<Form.FieldErrors />
+				</Form.Field>
 
-			<Form.Field {form} name="description">
-				<Form.Control>
-					{#snippet children({ props }: { props: ControlAttrs })}
-						<Form.Label>Description</Form.Label>
-						<Textarea
-							{...props}
-							bind:value={$formData.description}
-							placeholder="Enter role description"
-							rows={3}
-						/>
-					{/snippet}
-				</Form.Control>
-				<Form.Description>A brief description of the role (optional)</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
+				<Form.Field {form} name="description">
+					<Form.Control>
+						{#snippet children({ props }: { props: ControlAttrs })}
+							<Form.Label>Description</Form.Label>
+							<Textarea
+								{...props}
+								bind:value={$formData.description}
+								placeholder="Enter role description"
+								rows={3}
+							/>
+						{/snippet}
+					</Form.Control>
+					<Form.Description>A brief description of the role (optional)</Form.Description>
+					<Form.FieldErrors />
+				</Form.Field>
 
-			<Dialog.Footer>
-				<Button type="button" variant="outline" onclick={handleClose} disabled={updateRole.isPending}>
-					Cancel
-				</Button>
-				<Form.Button disabled={updateRole.isPending}>
-					{#if updateRole.isPending}
-						<Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
-					{/if}
-					Save Changes
-				</Form.Button>
-			</Dialog.Footer>
-		</form>
+				<Dialog.Footer>
+					<Button
+						type="button"
+						variant="outline"
+						onclick={handleClose}
+						disabled={updateRole.isPending}
+					>
+						Cancel
+					</Button>
+					<Form.Button disabled={updateRole.isPending}>
+						{#if updateRole.isPending}
+							<Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
+						{/if}
+						Save Changes
+					</Form.Button>
+				</Dialog.Footer>
+			</form>
+			{#snippet fallback()}
+				<div class="py-8 text-center">
+					<p class="text-muted-foreground">You don't have permission to edit roles.</p>
+					<Dialog.Footer class="mt-4">
+						<Button variant="outline" onclick={handleClose}>Close</Button>
+					</Dialog.Footer>
+				</div>
+			{/snippet}
+		</Authorize>
 	</Dialog.Content>
 </Dialog.Root>

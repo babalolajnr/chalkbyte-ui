@@ -1,6 +1,7 @@
 <script lang="ts">
-	import * as Sidebar from "$lib/components/ui/sidebar/index.js";
-	import type { Component, ComponentProps } from "svelte";
+	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import type { Component, ComponentProps } from 'svelte';
+	import { resolve } from '$app/paths';
 
 	let {
 		ref = $bindable(null),
@@ -22,7 +23,7 @@
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton size="sm">
 						{#snippet child({ props })}
-							<a href={item.url} {...props}>
+							<a href={resolve(item.url as '/')} {...props}>
 								<item.icon />
 								<span>{item.title}</span>
 							</a>

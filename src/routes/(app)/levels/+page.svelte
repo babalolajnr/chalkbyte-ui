@@ -9,6 +9,8 @@
 	import type { LevelQueryParams } from '$lib/types/level';
 	import LevelForm from './level-form.svelte';
 	import type { PageData } from './$types.js';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
 
 	let { data }: { data: PageData } = $props();
 
@@ -60,50 +62,63 @@
 			<h1 class="text-3xl font-bold tracking-tight">Levels</h1>
 			<p class="text-muted-foreground">Manage student levels and grades</p>
 		</div>
-		<Button onclick={() => (showForm = !showForm)}>
-			<PlusIcon class="mr-2 h-4 w-4" />
-			Add Level
-		</Button>
+		<Authorize permission={SystemPermission.LEVELS_CREATE}>
+			<Button onclick={() => (showForm = !showForm)}>
+				<PlusIcon class="mr-2 h-4 w-4" />
+				Add Level
+			</Button>
+		</Authorize>
 	</div>
 
-	{#if showForm}
+	<Authorize permission={SystemPermission.LEVELS_CREATE}>
+		{#if showForm}
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Create New Level</Card.Title>
+					<Card.Description>Add a new level to organize students</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<LevelForm data={data.form!} onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
+				</Card.Content>
+			</Card.Root>
+		{/if}
+	</Authorize>
+
+	<Authorize permission={SystemPermission.LEVELS_READ}>
 		<Card.Root>
 			<Card.Header>
-				<Card.Title>Create New Level</Card.Title>
-				<Card.Description>Add a new level to organize students</Card.Description>
+				<Card.Title>All Levels</Card.Title>
+				<Card.Description>A list of all levels in your school</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<LevelForm data={data.form!} onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
+				{#if levels.isLoading}
+					<div class="flex items-center justify-center py-8">
+						<Loader2Icon class="h-8 w-8 animate-spin text-muted-foreground" />
+					</div>
+				{:else if levels.isError}
+					<div class="py-8 text-center text-destructive">
+						<p>Error loading levels</p>
+						<p class="text-sm">{levels.error?.message}</p>
+					</div>
+				{:else if levels.data}
+					<DataTable
+						data={levels.data.data}
+						meta={levels.data.meta}
+						{columns}
+						onPaginationChange={handlePaginationChange}
+						onFilterChange={handleFilterChange}
+						pageSize={queryParams.per_page}
+						initialFilters={filterState}
+					/>
+				{/if}
 			</Card.Content>
 		</Card.Root>
-	{/if}
-
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>All Levels</Card.Title>
-			<Card.Description>A list of all levels in your school</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			{#if levels.isLoading}
-				<div class="flex items-center justify-center py-8">
-					<Loader2Icon class="h-8 w-8 animate-spin text-muted-foreground" />
-				</div>
-			{:else if levels.isError}
-				<div class="py-8 text-center text-destructive">
-					<p>Error loading levels</p>
-					<p class="text-sm">{levels.error?.message}</p>
-				</div>
-			{:else if levels.data}
-				<DataTable
-					data={levels.data.data}
-					meta={levels.data.meta}
-					{columns}
-					onPaginationChange={handlePaginationChange}
-					onFilterChange={handleFilterChange}
-					pageSize={queryParams.per_page}
-					initialFilters={filterState}
-				/>
-			{/if}
-		</Card.Content>
-	</Card.Root>
+		{#snippet fallback()}
+			<Card.Root>
+				<Card.Content class="py-8">
+					<p class="text-center text-muted-foreground">You don't have permission to view levels.</p>
+				</Card.Content>
+			</Card.Root>
+		{/snippet}
+	</Authorize>
 </div>

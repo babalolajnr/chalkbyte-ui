@@ -9,6 +9,8 @@
 	import type { SchoolQueryParams } from '$lib/types/school';
 	import SchoolForm from './school-form.svelte';
 	import type { PageData } from './$types.js';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
 
 	let { data }: { data: PageData } = $props();
 
@@ -66,22 +68,26 @@
 			<h1 class="text-3xl font-bold tracking-tight">Schools</h1>
 			<p class="text-muted-foreground">Manage your schools</p>
 		</div>
-		<Button onclick={() => (showForm = !showForm)}>
-			<PlusIcon class="mr-2 h-4 w-4" />
-			Add School
-		</Button>
+		<Authorize permission={SystemPermission.SCHOOLS_CREATE}>
+			<Button onclick={() => (showForm = !showForm)}>
+				<PlusIcon class="mr-2 h-4 w-4" />
+				Add School
+			</Button>
+		</Authorize>
 	</div>
 
 	{#if showForm}
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Create New School</Card.Title>
-				<Card.Description>Add a new school to the system</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<SchoolForm data={data.form!} onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
-			</Card.Content>
-		</Card.Root>
+		<Authorize permission={SystemPermission.SCHOOLS_CREATE}>
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Create New School</Card.Title>
+					<Card.Description>Add a new school to the system</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<SchoolForm data={data.form!} onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
+				</Card.Content>
+			</Card.Root>
+		</Authorize>
 	{/if}
 
 	<Card.Root>

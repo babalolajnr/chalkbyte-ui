@@ -9,6 +9,8 @@
 	import ShieldIcon from '@lucide/svelte/icons/shield';
 	import { useDeleteUser } from '$lib/queries/user.queries';
 	import type { User } from '$lib/types/user';
+	import { SystemPermission } from '$lib/types/permissions';
+	import { Authorize } from '$lib/components/access-control';
 
 	type ActionsProps = {
 		user: User;
@@ -59,18 +61,24 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="end">
 		<DropdownMenu.Label>Actions</DropdownMenu.Label>
-		<DropdownMenu.Item onclick={handleViewDetails}>
-			<UserIcon class="mr-2 h-4 w-4" />
-			View Details
-		</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={handleEdit}>
-			<PencilIcon class="mr-2 h-4 w-4" />
-			Edit User
-		</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={handleManageRoles}>
-			<ShieldIcon class="mr-2 h-4 w-4" />
-			Manage Roles
-		</DropdownMenu.Item>
+		<Authorize permission={SystemPermission.USERS_READ}>
+			<DropdownMenu.Item onclick={handleViewDetails}>
+				<UserIcon class="mr-2 h-4 w-4" />
+				View Details
+			</DropdownMenu.Item>
+		</Authorize>
+		<Authorize permission={SystemPermission.USERS_UPDATE}>
+			<DropdownMenu.Item onclick={handleEdit}>
+				<PencilIcon class="mr-2 h-4 w-4" />
+				Edit User
+			</DropdownMenu.Item>
+		</Authorize>
+		<Authorize permission={SystemPermission.ROLES_ASSIGN}>
+			<DropdownMenu.Item onclick={handleManageRoles}>
+				<ShieldIcon class="mr-2 h-4 w-4" />
+				Manage Roles
+			</DropdownMenu.Item>
+		</Authorize>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Item onclick={handleCopyId}>
 			<CopyIcon class="mr-2 h-4 w-4" />
@@ -80,10 +88,12 @@
 			<CopyIcon class="mr-2 h-4 w-4" />
 			Copy Email
 		</DropdownMenu.Item>
-		<DropdownMenu.Separator />
-		<DropdownMenu.Item onclick={handleDelete} class="text-destructive">
-			<Trash2Icon class="mr-2 h-4 w-4" />
-			Delete
-		</DropdownMenu.Item>
+		<Authorize permission={SystemPermission.USERS_DELETE}>
+			<DropdownMenu.Separator />
+			<DropdownMenu.Item onclick={handleDelete} class="text-destructive">
+				<Trash2Icon class="mr-2 h-4 w-4" />
+				Delete
+			</DropdownMenu.Item>
+		</Authorize>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

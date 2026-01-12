@@ -20,6 +20,9 @@
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import UserMinusIcon from '@lucide/svelte/icons/user-minus';
 	import type { LevelStudent } from '$lib/types/level';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
+	import { Levels } from '$lib/authorization';
 
 	const levelId = $derived($page.params.id || '');
 
@@ -33,6 +36,9 @@
 	const updateLevel = useUpdateLevel();
 	const removeStudent = useRemoveStudentFromLevel();
 
+	const canUpdate = $derived(Levels.canUpdate());
+	const canAssignStudents = $derived(Levels.canAssignStudents());
+
 	$effect(() => {
 		if (level.data) {
 			editName = level.data.name;
@@ -41,14 +47,15 @@
 	});
 
 	function openEditDialog() {
-		if (level.data) {
+		if (level.data && canUpdate) {
 			editName = level.data.name;
 			editDescription = level.data.description || '';
+			showEditDialog = true;
 		}
-		showEditDialog = true;
 	}
 
 	function handleUpdateLevel() {
+		if (!canUpdate) return;
 		updateLevel.mutate(
 			{
 				id: levelId,
@@ -66,6 +73,7 @@
 	}
 
 	function handleRemoveStudent(student: LevelStudent) {
+		if (!canAssignStudents) return;
 		if (
 			confirm(
 				`Are you sure you want to remove "${student.first_name} ${student.last_name}" from this level?`
@@ -97,10 +105,12 @@
 		</div>
 		<div class="flex gap-2">
 			{#if level.data}
-				<Button variant="outline" onclick={openEditDialog}>
-					<PencilIcon class="mr-2 h-4 w-4" />
-					Edit
-				</Button>
+				<Authorize permission={SystemPermission.LEVELS_UPDATE}>
+					<Button variant="outline" onclick={openEditDialog}>
+						<PencilIcon class="mr-2 h-4 w-4" />
+						Edit
+					</Button>
+				</Authorize>
 			{/if}
 		</div>
 	</div>
@@ -233,7 +243,7 @@
 									<Table.Head>Name</Table.Head>
 									<Table.Head>Email</Table.Head>
 									<Table.Head>Role</Table.Head>
-									<Table.Head class="w-[100px]">Actions</Table.Head>
+									<Table.Head class="w-25">Actions</Table.Head>
 								</Table.Row>
 							</Table.Header>
 							<Table.Body>
@@ -246,19 +256,21 @@
 										<Table.Cell>{student.email}</Table.Cell>
 										<Table.Cell class="capitalize">{student.role}</Table.Cell>
 										<Table.Cell>
-											<Button
-												variant="ghost"
-												size="sm"
-												class="text-destructive hover:text-destructive"
-												onclick={() => handleRemoveStudent(student)}
-												disabled={removeStudent.isPending}
-											>
-												{#if removeStudent.isPending}
-													<Loader2Icon class="h-4 w-4 animate-spin" />
-												{:else}
-													<UserMinusIcon class="h-4 w-4" />
-												{/if}
-											</Button>
+											<Authorize permission={SystemPermission.LEVELS_ASSIGN_STUDENTS}>
+												<Button
+													variant="ghost"
+													size="sm"
+													class="text-destructive hover:text-destructive"
+													onclick={() => handleRemoveStudent(student)}
+													disabled={removeStudent.isPending}
+												>
+													{#if removeStudent.isPending}
+														<Loader2Icon class="h-4 w-4 animate-spin" />
+													{:else}
+														<UserMinusIcon class="h-4 w-4" />
+													{/if}
+												</Button>
+											</Authorize>
 										</Table.Cell>
 									</Table.Row>
 								{/each}
@@ -275,34 +287,44 @@
 </div>
 
 <Dialog.Root bind:open={showEditDialog}>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class="sm:max-w-106.25">
 		<Dialog.Header>
 			<Dialog.Title>Edit Level</Dialog.Title>
 			<Dialog.Description>Update the level details</Dialog.Description>
 		</Dialog.Header>
-		<div class="grid gap-4 py-4">
-			<div class="grid gap-2">
-				<Label for="name">Name</Label>
-				<Input id="name" bind:value={editName} placeholder="Enter level name" />
+		<Authorize permission={SystemPermission.LEVELS_UPDATE}>
+			<div class="grid gap-4 py-4">
+				<div class="grid gap-2">
+					<Label for="name">Name</Label>
+					<Input id="name" bind:value={editName} placeholder="Enter level name" />
+				</div>
+				<div class="grid gap-2">
+					<Label for="description">Description</Label>
+					<Textarea
+						id="description"
+						bind:value={editDescription}
+						placeholder="Enter level description"
+						rows={3}
+					/>
+				</div>
 			</div>
-			<div class="grid gap-2">
-				<Label for="description">Description</Label>
-				<Textarea
-					id="description"
-					bind:value={editDescription}
-					placeholder="Enter level description"
-					rows={3}
-				/>
-			</div>
-		</div>
-		<Dialog.Footer>
-			<Button variant="outline" onclick={() => (showEditDialog = false)}>Cancel</Button>
-			<Button onclick={handleUpdateLevel} disabled={updateLevel.isPending || !editName.trim()}>
-				{#if updateLevel.isPending}
-					<Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
-				{/if}
-				Save Changes
-			</Button>
-		</Dialog.Footer>
+			<Dialog.Footer>
+				<Button variant="outline" onclick={() => (showEditDialog = false)}>Cancel</Button>
+				<Button onclick={handleUpdateLevel} disabled={updateLevel.isPending || !editName.trim()}>
+					{#if updateLevel.isPending}
+						<Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
+					{/if}
+					Save Changes
+				</Button>
+			</Dialog.Footer>
+			{#snippet fallback()}
+				<div class="py-8 text-center">
+					<p class="text-muted-foreground">You don't have permission to edit levels.</p>
+					<Dialog.Footer class="mt-4">
+						<Button variant="outline" onclick={() => (showEditDialog = false)}>Close</Button>
+					</Dialog.Footer>
+				</div>
+			{/snippet}
+		</Authorize>
 	</Dialog.Content>
 </Dialog.Root>

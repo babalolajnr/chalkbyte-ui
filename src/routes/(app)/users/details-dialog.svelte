@@ -12,6 +12,8 @@
 	import ShieldIcon from '@lucide/svelte/icons/shield';
 	import LayersIcon from '@lucide/svelte/icons/layers';
 	import GitBranchIcon from '@lucide/svelte/icons/git-branch';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
 
 	let {
 		open = $bindable(false),
@@ -200,7 +202,9 @@
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={handleClose}>Close</Button>
-				<Button onclick={handleEdit}>Edit User</Button>
+				<Authorize permission={SystemPermission.USERS_UPDATE}>
+					<Button onclick={handleEdit}>Edit User</Button>
+				</Authorize>
 			</Dialog.Footer>
 		{/if}
 	</Dialog.Content>

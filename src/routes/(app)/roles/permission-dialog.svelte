@@ -10,6 +10,9 @@
 	import type { CustomRoleWithPermissions, Permission } from '$lib/types/roles';
 	import Loader2Icon from '@lucide/svelte/icons/loader-2';
 	import ShieldIcon from '@lucide/svelte/icons/shield';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
+	import { Roles } from '$lib/authorization';
 
 	let {
 		open = $bindable(false),
@@ -27,6 +30,8 @@
 
 	let selectedPermissions = $state<string[]>([]);
 	let initialPermissions = $state<string[]>([]);
+
+	const canManageRoles = $derived(Roles.canManage());
 
 	$effect(() => {
 		if (role && open) {
@@ -56,6 +61,7 @@
 	});
 
 	function togglePermission(permissionId: string) {
+		if (!canManageRoles) return;
 		if (selectedPermissions.includes(permissionId)) {
 			selectedPermissions = selectedPermissions.filter((id) => id !== permissionId);
 		} else {
@@ -64,6 +70,7 @@
 	}
 
 	function toggleCategory(category: string) {
+		if (!canManageRoles) return;
 		const categoryPermissions = groupedPermissions()[category] || [];
 		const categoryIds = categoryPermissions.map((p) => p.id);
 		const allSelected = categoryIds.every((id) => selectedPermissions.includes(id));
@@ -90,7 +97,7 @@
 	}
 
 	async function handleSave() {
-		if (!role) return;
+		if (!role || !canManageRoles) return;
 
 		const toAdd = selectedPermissions.filter((id) => !initialPermissions.includes(id));
 		const toRemove = initialPermissions.filter((id) => !selectedPermissions.includes(id));
@@ -161,6 +168,7 @@
 									checked={isCategoryChecked(category)}
 									indeterminate={isCategoryIndeterminate(category)}
 									onCheckedChange={() => toggleCategory(category)}
+									disabled={!canManageRoles}
 								/>
 								<span class="text-sm font-semibold capitalize">{category}</span>
 								<span class="text-xs text-muted-foreground">
@@ -176,6 +184,7 @@
 											checked={selectedPermissions.includes(permission.id)}
 											onCheckedChange={() => togglePermission(permission.id)}
 											class="mt-0.5"
+											disabled={!canManageRoles}
 										/>
 										<div class="grid gap-0.5">
 											<span class="text-sm font-medium">{permission.name}</span>
@@ -201,12 +210,17 @@
 				</span>
 				<div class="flex gap-2">
 					<Button variant="outline" onclick={handleClose} disabled={isSaving}>Cancel</Button>
-					<Button onclick={handleSave} disabled={!hasChanges() || isSaving}>
-						{#if isSaving}
-							<Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
-						{/if}
-						Save Changes
-					</Button>
+					<Authorize permission={SystemPermission.ROLES_MANAGE}>
+						<Button onclick={handleSave} disabled={!hasChanges() || isSaving}>
+							{#if isSaving}
+								<Loader2Icon class="mr-2 h-4 w-4 animate-spin" />
+							{/if}
+							Save Changes
+						</Button>
+						{#snippet fallback()}
+							<Button disabled>No Permission</Button>
+						{/snippet}
+					</Authorize>
 				</div>
 			</div>
 		</Dialog.Footer>

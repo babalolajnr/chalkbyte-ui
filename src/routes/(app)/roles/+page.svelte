@@ -11,6 +11,8 @@
 	import EditDialog from './edit-dialog.svelte';
 	import PermissionDialog from './permission-dialog.svelte';
 	import type { PageData } from './$types.js';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
 
 	let { data }: { data: PageData } = $props();
 
@@ -96,53 +98,66 @@
 			<h1 class="text-3xl font-bold tracking-tight">Roles & Permissions</h1>
 			<p class="text-muted-foreground">Manage roles and their permissions</p>
 		</div>
-		<Button onclick={() => (showForm = !showForm)}>
-			<PlusIcon class="mr-2 h-4 w-4" />
-			Add Role
-		</Button>
+		<Authorize permission={SystemPermission.ROLES_CREATE}>
+			<Button onclick={() => (showForm = !showForm)}>
+				<PlusIcon class="mr-2 h-4 w-4" />
+				Add Role
+			</Button>
+		</Authorize>
 	</div>
 
-	{#if showForm}
+	<Authorize permission={SystemPermission.ROLES_CREATE}>
+		{#if showForm}
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Create New Role</Card.Title>
+					<Card.Description>Add a new role with permissions</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<RoleForm data={data.form} onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
+				</Card.Content>
+			</Card.Root>
+		{/if}
+	</Authorize>
+
+	<Authorize permission={SystemPermission.ROLES_READ}>
 		<Card.Root>
 			<Card.Header>
-				<Card.Title>Create New Role</Card.Title>
-				<Card.Description>Add a new role with permissions</Card.Description>
+				<Card.Title>All Roles</Card.Title>
+				<Card.Description>A list of all roles in the system</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<RoleForm data={data.form} onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
+				{#if roles.isLoading}
+					<div class="flex items-center justify-center py-8">
+						<Loader2Icon class="h-8 w-8 animate-spin text-muted-foreground" />
+					</div>
+				{:else if roles.isError}
+					<div class="py-8 text-center text-destructive">
+						<p>Error loading roles</p>
+						<p class="text-sm">{roles.error?.message}</p>
+					</div>
+				{:else if roles.data}
+					<DataTable
+						data={roles.data.data}
+						meta={roles.data.meta}
+						{columns}
+						onPaginationChange={handlePaginationChange}
+						onFilterChange={handleFilterChange}
+						pageSize={queryParams.limit}
+						initialFilters={filterState}
+						bind:showFilters={showFiltersDropdown}
+					/>
+				{/if}
 			</Card.Content>
 		</Card.Root>
-	{/if}
-
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>All Roles</Card.Title>
-			<Card.Description>A list of all roles in the system</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			{#if roles.isLoading}
-				<div class="flex items-center justify-center py-8">
-					<Loader2Icon class="h-8 w-8 animate-spin text-muted-foreground" />
-				</div>
-			{:else if roles.isError}
-				<div class="py-8 text-center text-destructive">
-					<p>Error loading roles</p>
-					<p class="text-sm">{roles.error?.message}</p>
-				</div>
-			{:else if roles.data}
-				<DataTable
-					data={roles.data.data}
-					meta={roles.data.meta}
-					{columns}
-					onPaginationChange={handlePaginationChange}
-					onFilterChange={handleFilterChange}
-					pageSize={queryParams.limit}
-					initialFilters={filterState}
-					bind:showFilters={showFiltersDropdown}
-				/>
-			{/if}
-		</Card.Content>
-	</Card.Root>
+		{#snippet fallback()}
+			<Card.Root>
+				<Card.Content class="py-8">
+					<p class="text-center text-muted-foreground">You don't have permission to view roles.</p>
+				</Card.Content>
+			</Card.Root>
+		{/snippet}
+	</Authorize>
 </div>
 
 <EditDialog bind:open={showEditDialog} role={selectedRole} onClose={handleEditClose} />

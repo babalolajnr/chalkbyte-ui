@@ -8,6 +8,8 @@
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import { useDeleteSchool } from '$lib/queries/school.queries';
 	import type { School } from '$lib/types/school';
+	import { Schools } from '$lib/authorization';
+	import { resolve } from '$app/paths';
 
 	type ActionsProps = {
 		school: School;
@@ -16,6 +18,8 @@
 	let { school }: ActionsProps = $props();
 
 	const deleteSchool = useDeleteSchool();
+
+	const canDelete = $derived(Schools.canDelete());
 
 	function handleCopyId() {
 		navigator.clipboard.writeText(school.id);
@@ -40,7 +44,11 @@
 	<DropdownMenu.Content align="end">
 		<DropdownMenu.Label>Actions</DropdownMenu.Label>
 		<DropdownMenu.Item>
-			<a href="/schools/{school.id}" class="flex items-center" data-sveltekit-preload-data>
+			<a
+				href={resolve(`/schools/${school.id}`)}
+				class="flex items-center"
+				data-sveltekit-preload-data
+			>
 				<EyeIcon class="mr-2 h-4 w-4" />
 				View Details
 			</a>
@@ -49,10 +57,12 @@
 			<CopyIcon class="mr-2 h-4 w-4" />
 			Copy ID
 		</DropdownMenu.Item>
-		<DropdownMenu.Separator />
-		<DropdownMenu.Item onclick={handleDelete} class="text-destructive">
-			<Trash2Icon class="mr-2 h-4 w-4" />
-			Delete
-		</DropdownMenu.Item>
+		{#if canDelete}
+			<DropdownMenu.Separator />
+			<DropdownMenu.Item onclick={handleDelete} class="text-destructive">
+				<Trash2Icon class="mr-2 h-4 w-4" />
+				Delete
+			</DropdownMenu.Item>
+		{/if}
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

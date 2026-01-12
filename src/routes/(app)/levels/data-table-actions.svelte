@@ -7,6 +7,8 @@
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import { useDeleteLevel } from '$lib/queries/level.queries';
 	import type { LevelWithStudentCount } from '$lib/types/level';
+	import { Levels } from '$lib/authorization';
+	import { resolve } from '$app/paths';
 
 	type ActionsProps = {
 		level: LevelWithStudentCount;
@@ -15,6 +17,8 @@
 	let { level }: ActionsProps = $props();
 
 	const deleteLevel = useDeleteLevel();
+
+	const canDelete = $derived(Levels.canDelete());
 
 	function handleCopyId() {
 		navigator.clipboard.writeText(level.id);
@@ -39,7 +43,11 @@
 	<DropdownMenu.Content align="end">
 		<DropdownMenu.Label>Actions</DropdownMenu.Label>
 		<DropdownMenu.Item>
-			<a href="/levels/{level.id}" class="flex items-center" data-sveltekit-preload-data>
+			<a
+				href={resolve(`/levels/${level.id}`)}
+				class="flex items-center"
+				data-sveltekit-preload-data
+			>
 				<EyeIcon class="mr-2 h-4 w-4" />
 				View Details
 			</a>
@@ -48,10 +56,12 @@
 			<CopyIcon class="mr-2 h-4 w-4" />
 			Copy ID
 		</DropdownMenu.Item>
-		<DropdownMenu.Separator />
-		<DropdownMenu.Item onclick={handleDelete} class="text-destructive">
-			<Trash2Icon class="mr-2 h-4 w-4" />
-			Delete
-		</DropdownMenu.Item>
+		{#if canDelete}
+			<DropdownMenu.Separator />
+			<DropdownMenu.Item onclick={handleDelete} class="text-destructive">
+				<Trash2Icon class="mr-2 h-4 w-4" />
+				Delete
+			</DropdownMenu.Item>
+		{/if}
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

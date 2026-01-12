@@ -15,6 +15,8 @@
 	import DetailsDialog from './details-dialog.svelte';
 	import type { PageData } from './$types.js';
 	import { authStore } from '$lib/stores/auth.store';
+	import { Authorize } from '$lib/components/access-control';
+	import { SystemPermission } from '$lib/types/permissions';
 
 	let { data }: { data: PageData } = $props();
 
@@ -148,70 +150,83 @@
 			<h1 class="flex items-center gap-2 text-3xl font-bold tracking-tight">User Management</h1>
 			<p class="text-muted-foreground">Manage users, assign roles, and configure permissions</p>
 		</div>
-		<Button onclick={() => (showForm = !showForm)}>
-			<PlusIcon class="mr-2 h-4 w-4" />
-			Add User
-		</Button>
+		<Authorize permission={SystemPermission.USERS_CREATE}>
+			<Button onclick={() => (showForm = !showForm)}>
+				<PlusIcon class="mr-2 h-4 w-4" />
+				Add User
+			</Button>
+		</Authorize>
 	</div>
 
-	{#if showForm}
+	<Authorize permission={SystemPermission.USERS_CREATE}>
+		{#if showForm}
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Create New User</Card.Title>
+					<Card.Description>Add a new user to the system</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					{#if user}
+						<UserForm
+							data={data.form}
+							schoolId={user.school?.id}
+							onSuccess={handleFormSuccess}
+							onCancel={handleFormCancel}
+						/>
+					{/if}
+				</Card.Content>
+			</Card.Root>
+		{/if}
+	</Authorize>
+
+	<Authorize permission={SystemPermission.USERS_READ}>
 		<Card.Root>
 			<Card.Header>
-				<Card.Title>Create New User</Card.Title>
-				<Card.Description>Add a new user to the system</Card.Description>
+				<Card.Title>All Users</Card.Title>
+				<Card.Description>
+					A list of all users in the system
+					{#if users.data?.meta?.total}
+						<span class="ml-1">({users.data.meta.total} total)</span>
+					{/if}
+				</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				{#if user}
-					<UserForm
-						data={data.form}
-						schoolId={user.school?.id}
-						onSuccess={handleFormSuccess}
-						onCancel={handleFormCancel}
+				{#if users.isLoading}
+					<div class="flex items-center justify-center py-8">
+						<Loader2Icon class="h-8 w-8 animate-spin text-muted-foreground" />
+					</div>
+				{:else if users.isError}
+					<div class="py-8 text-center text-destructive">
+						<p>Error loading users</p>
+						<p class="text-sm">{users.error?.message}</p>
+					</div>
+				{:else if users.data}
+					<DataTable
+						data={users.data.data}
+						meta={{
+							...users.data.meta,
+							offset: users.data.meta.offset ?? 0
+						}}
+						{columns}
+						onPaginationChange={handlePaginationChange}
+						onFilterChange={handleFilterChange}
+						pageSize={queryParams.limit}
+						initialFilters={filterState}
+						bind:showFilters={showFiltersDropdown}
+						schools={schoolOptions}
+						roles={roleOptions}
 					/>
 				{/if}
 			</Card.Content>
 		</Card.Root>
-	{/if}
-
-	<Card.Root>
-		<Card.Header>
-			<Card.Title>All Users</Card.Title>
-			<Card.Description>
-				A list of all users in the system
-				{#if users.data?.meta?.total}
-					<span class="ml-1">({users.data.meta.total} total)</span>
-				{/if}
-			</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			{#if users.isLoading}
-				<div class="flex items-center justify-center py-8">
-					<Loader2Icon class="h-8 w-8 animate-spin text-muted-foreground" />
-				</div>
-			{:else if users.isError}
-				<div class="py-8 text-center text-destructive">
-					<p>Error loading users</p>
-					<p class="text-sm">{users.error?.message}</p>
-				</div>
-			{:else if users.data}
-				<DataTable
-					data={users.data.data}
-					meta={{
-						...users.data.meta,
-						offset: users.data.meta.offset ?? 0
-					}}
-					{columns}
-					onPaginationChange={handlePaginationChange}
-					onFilterChange={handleFilterChange}
-					pageSize={queryParams.limit}
-					initialFilters={filterState}
-					bind:showFilters={showFiltersDropdown}
-					schools={schoolOptions}
-					roles={roleOptions}
-				/>
-			{/if}
-		</Card.Content>
-	</Card.Root>
+		{#snippet fallback()}
+			<Card.Root>
+				<Card.Content class="py-8">
+					<p class="text-center text-muted-foreground">You don't have permission to view users.</p>
+				</Card.Content>
+			</Card.Root>
+		{/snippet}
+	</Authorize>
 </div>
 
 <EditDialog bind:open={showEditDialog} user={selectedUser} onClose={handleEditClose} />
