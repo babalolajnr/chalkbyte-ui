@@ -30,8 +30,6 @@
 		onCancel?: () => void;
 	} = $props();
 
-	console.log('schoolId', schoolId);
-
 	const createUser = useCreateUser();
 	const schools = useSchools({ limit: 100 });
 	const roles = useRoles({ limit: 100 });

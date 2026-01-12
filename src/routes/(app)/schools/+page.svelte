@@ -10,9 +10,28 @@
 	import SchoolForm from './school-form.svelte';
 	import type { PageData } from './$types.js';
 	import { Authorize } from '$lib/components/access-control';
-	import { SystemPermission } from '$lib/types/permissions';
+	import { SystemPermission, SystemRole } from '$lib/types/permissions';
+	import { hasRole } from '$lib/stores/permissions.store';
+	import { authStore } from '$lib/stores/auth.store';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
+
+	const isSuperAdmin = $derived(hasRole(SystemRole.SUPER_ADMIN));
+	const userSchool = $derived($authStore.user?.school);
+
+	// Redirect non-super admins
+	$effect(() => {
+		if (!isSuperAdmin) {
+			if (userSchool?.id) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				goto(resolve('/(app)/school' as any));
+			} else {
+				goto(resolve('/(app)/dashboard'));
+			}
+		}
+	});
 
 	let showForm = $state(false);
 
@@ -66,7 +85,7 @@
 	<div class="flex items-center justify-between">
 		<div>
 			<h1 class="text-3xl font-bold tracking-tight">Schools</h1>
-			<p class="text-muted-foreground">Manage your schools</p>
+			<p class="text-muted-foreground">Manage all schools</p>
 		</div>
 		<Authorize permission={SystemPermission.SCHOOLS_CREATE}>
 			<Button onclick={() => (showForm = !showForm)}>
