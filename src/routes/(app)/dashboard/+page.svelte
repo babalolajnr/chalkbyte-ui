@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { requireAuth } from '$lib/guards/auth.guard';
 	import { currentUser, authStore } from '$lib/stores/auth.store';
+	import { permissionsStore } from '$lib/stores/permissions.store';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { goto } from '$app/navigation';
@@ -47,11 +48,13 @@
 						</div>
 						<div>
 							<dt class="text-sm font-medium text-gray-500">Role</dt>
-							<dd class="text-sm text-gray-900 capitalize">{$currentUser?.role}</dd>
+							<dd class="text-sm text-gray-900 capitalize">
+								{$permissionsStore.roles.map((r) => r.name).join(', ') || 'No roles assigned'}
+							</dd>
 						</div>
 						<div>
-							<dt class="text-sm font-medium text-gray-500">School ID</dt>
-							<dd class="text-sm text-gray-900">{$currentUser?.school_id}</dd>
+							<dt class="text-sm font-medium text-gray-500">School</dt>
+							<dd class="text-sm text-gray-900">{$currentUser?.school?.name || 'N/A'}</dd>
 						</div>
 					</dl>
 				</Card.Content>
