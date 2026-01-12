@@ -33,7 +33,11 @@
 					<Sidebar.MenuItem {...props}>
 						<Sidebar.MenuButton tooltipContent={mainItem.title}>
 							{#snippet child({ props: btnProps })}
-								<a href={resolve(mainItem.url as '/')} {...btnProps} data-sveltekit-preload-data>
+								<a
+									href={resolve(mainItem.url as '/')}
+									{...btnProps}
+									data-sveltekit-preload-data="hover"
+								>
 									<mainItem.icon />
 									<span>{mainItem.title}</span>
 								</a>

@@ -47,7 +47,7 @@
 			<a
 				href={resolve(`/schools/${school.id}`)}
 				class="flex items-center"
-				data-sveltekit-preload-data
+				data-sveltekit-preload-data="hover"
 			>
 				<EyeIcon class="mr-2 h-4 w-4" />
 				View Details
