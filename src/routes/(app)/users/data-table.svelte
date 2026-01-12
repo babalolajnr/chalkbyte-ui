@@ -43,6 +43,7 @@
 		showFilters?: boolean;
 		schools?: { id: string; name: string }[];
 		roles?: { id: string; name: string }[];
+		isSystemAdmin?: boolean;
 	};
 
 	let {
@@ -55,67 +56,83 @@
 		initialFilters,
 		showFilters = $bindable(false),
 		schools = [],
-		roles = []
+		roles = [],
+		isSystemAdmin = false
 	}: DataTableProps<TData, TValue> = $props();
 
 	let sorting = $state<SortingState>([]);
 	let columnFilters = $state<ColumnFiltersState>([]);
 	let rowSelection = $state<RowSelectionState>({});
 	let columnVisibility = $state<VisibilityState>({});
-	let searchValue = $state('');
+	let firstNameFilter = $state('');
+	let lastNameFilter = $state('');
+	let emailFilter = $state('');
 	let selectedSchool = $state<string | undefined>(undefined);
 	let selectedRole = $state<string | undefined>(undefined);
-	let searchTimeout: ReturnType<typeof setTimeout> | undefined;
+	let filterTimeout: ReturnType<typeof setTimeout> | undefined;
 
 	$effect(() => {
 		if (initialFilters) {
-			searchValue = initialFilters.first_name || initialFilters.email || '';
+			firstNameFilter = initialFilters.first_name || '';
+			lastNameFilter = initialFilters.last_name || '';
+			emailFilter = initialFilters.email || '';
 			selectedSchool = initialFilters.school_id;
 			selectedRole = initialFilters.role_id;
 		}
 	});
 
-	function handleSearchInput(value: string) {
-		searchValue = value;
-		if (searchTimeout) {
-			clearTimeout(searchTimeout);
+	function applyFilters() {
+		onFilterChange({
+			first_name: firstNameFilter || undefined,
+			last_name: lastNameFilter || undefined,
+			email: emailFilter || undefined,
+			school_id: selectedSchool,
+			role_id: selectedRole
+		});
+	}
+
+	function handleTextFilterInput() {
+		if (filterTimeout) {
+			clearTimeout(filterTimeout);
 		}
-		searchTimeout = setTimeout(() => {
-			onFilterChange({
-				first_name: value || undefined,
-				school_id: selectedSchool,
-				role_id: selectedRole
-			});
+		filterTimeout = setTimeout(() => {
+			applyFilters();
 		}, 500);
 	}
 
 	function handleSchoolFilter(value: string | undefined) {
 		selectedSchool = value;
-		onFilterChange({
-			first_name: searchValue || undefined,
-			school_id: value,
-			role_id: selectedRole
-		});
+		applyFilters();
 	}
 
 	function handleRoleFilter(value: string | undefined) {
 		selectedRole = value;
-		onFilterChange({
-			first_name: searchValue || undefined,
-			school_id: selectedSchool,
-			role_id: value
-		});
+		applyFilters();
 	}
 
 	function clearFilters() {
-		searchValue = '';
+		firstNameFilter = '';
+		lastNameFilter = '';
+		emailFilter = '';
 		selectedSchool = undefined;
 		selectedRole = undefined;
 		onFilterChange({});
 	}
 
 	const hasActiveFilters = $derived(
-		searchValue !== '' || selectedSchool !== undefined || selectedRole !== undefined
+		firstNameFilter !== '' ||
+			lastNameFilter !== '' ||
+			emailFilter !== '' ||
+			selectedSchool !== undefined ||
+			selectedRole !== undefined
+	);
+
+	const activeFilterCount = $derived(
+		(firstNameFilter ? 1 : 0) +
+			(lastNameFilter ? 1 : 0) +
+			(emailFilter ? 1 : 0) +
+			(selectedSchool !== undefined ? 1 : 0) +
+			(selectedRole !== undefined ? 1 : 0)
 	);
 
 	const selectedSchoolName = $derived(
@@ -189,12 +206,6 @@
 	<div class="flex flex-col gap-4 py-4">
 		<div class="flex items-center justify-between">
 			<div class="flex flex-1 items-center gap-2">
-				<Input
-					placeholder="Search by name..."
-					value={searchValue}
-					oninput={(e) => handleSearchInput(e.currentTarget.value)}
-					class="h-9 w-50 lg:w-75"
-				/>
 				<Button
 					variant="outline"
 					size="sm"
@@ -207,9 +218,7 @@
 						<span
 							class="ml-2 flex size-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground"
 						>
-							{(searchValue ? 1 : 0) +
-								(selectedSchool !== undefined ? 1 : 0) +
-								(selectedRole !== undefined ? 1 : 0)}
+							{activeFilterCount}
 						</span>
 					{/if}
 				</Button>
@@ -224,7 +233,34 @@
 		</div>
 		{#if showFilters}
 			<div class="flex flex-wrap items-center gap-4 rounded-md border bg-muted/50 p-3">
-				{#if schools.length > 0}
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-medium">First Name:</span>
+					<Input
+						placeholder="Filter by first name..."
+						bind:value={firstNameFilter}
+						oninput={() => handleTextFilterInput()}
+						class="h-8 w-40"
+					/>
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-medium">Last Name:</span>
+					<Input
+						placeholder="Filter by last name..."
+						bind:value={lastNameFilter}
+						oninput={() => handleTextFilterInput()}
+						class="h-8 w-40"
+					/>
+				</div>
+				<div class="flex items-center gap-2">
+					<span class="text-sm font-medium">Email:</span>
+					<Input
+						placeholder="Filter by email..."
+						bind:value={emailFilter}
+						oninput={() => handleTextFilterInput()}
+						class="h-8 w-48"
+					/>
+				</div>
+				{#if isSystemAdmin && schools.length > 0}
 					<div class="flex items-center gap-2">
 						<span class="text-sm font-medium">School:</span>
 						<DropdownMenu.Root>

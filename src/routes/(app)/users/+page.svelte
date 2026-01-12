@@ -17,6 +17,7 @@
 	import { authStore } from '$lib/stores/auth.store';
 	import { Authorize } from '$lib/components/access-control';
 	import { SystemPermission } from '$lib/types/permissions';
+	import { isSystemAdmin } from '$lib/auth-utils';
 
 	let { data }: { data: PageData } = $props();
 
@@ -52,8 +53,10 @@
 	const schools = useSchools({ limit: 100 });
 	const roles = useRoles({ limit: 100 });
 
+	const canFilterBySchool = $derived(isSystemAdmin());
+
 	const schoolOptions = $derived(
-		schools.data?.data?.map((s) => ({ id: s.id, name: s.name })) || []
+		canFilterBySchool ? schools.data?.data?.map((s) => ({ id: s.id, name: s.name })) || [] : []
 	);
 
 	const roleOptions = $derived(roles.data?.data?.map((r) => ({ id: r.id, name: r.name })) || []);
@@ -215,6 +218,7 @@
 						bind:showFilters={showFiltersDropdown}
 						schools={schoolOptions}
 						roles={roleOptions}
+						isSystemAdmin={canFilterBySchool}
 					/>
 				{/if}
 			</Card.Content>
