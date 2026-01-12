@@ -6,36 +6,30 @@
 	import ShieldIcon from '@lucide/svelte/icons/shield';
 	import UsersIcon from '@lucide/svelte/icons/users';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
-	import { SystemPermission } from '$lib/types/permissions';
+	import { SystemPermission, SystemRole } from '$lib/types/permissions';
 
 	const navMainConfig = [
 		{
-			title: 'Schools',
-			route: '/schools' as const,
-			icon: SchoolIcon,
-			permission: SystemPermission.SCHOOLS_READ
-		},
-		{
 			title: 'Levels',
-			route: '/levels' as const,
+			route: '/levels',
 			icon: LayersIcon,
 			permission: SystemPermission.LEVELS_READ
 		},
 		{
 			title: 'Roles',
-			route: '/roles' as const,
+			route: '/roles',
 			icon: ShieldIcon,
 			permission: SystemPermission.ROLES_READ
 		},
 		{
 			title: 'Users',
-			route: '/users' as const,
+			route: '/users',
 			icon: UsersIcon,
 			permission: SystemPermission.USERS_READ
 		},
 		{
 			title: 'Settings',
-			route: '/settings' as const,
+			route: '/settings',
 			icon: SettingsIcon,
 			permission: SystemPermission.SETTINGS_READ
 		}
@@ -69,7 +63,8 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import CommandIcon from '@lucide/svelte/icons/command';
 	import type { ComponentProps } from 'svelte';
-	import { hasPermission, permissionsStore } from '$lib/stores/permissions.store';
+	import { hasPermission, hasRole, permissionsStore } from '$lib/stores/permissions.store';
+	import { authStore } from '$lib/stores/auth.store';
 	import { resolve } from '$app/paths';
 
 	let { ref = $bindable(null), ...restProps }: ComponentProps<typeof Sidebar.Root> = $props();
@@ -79,19 +74,50 @@
 		// Access the store to create reactivity
 		void $permissionsStore;
 
-		return navMainConfig
-			.filter((item) => {
-				// If no permission is required, show the item
+		const isSuperAdmin = hasRole(SystemRole.SUPER_ADMIN);
+		const userSchool = $authStore.user?.school;
+
+		// Build nav items dynamically
+		const items: Array<{
+			title: string;
+			route: string;
+			icon: typeof SchoolIcon;
+			permission?: string;
+		}> = [];
+
+		// Add school link based on role
+		if (hasPermission(SystemPermission.SCHOOLS_READ)) {
+			if (isSuperAdmin) {
+				items.push({
+					title: 'Schools',
+					route: '/schools',
+					icon: SchoolIcon,
+					permission: SystemPermission.SCHOOLS_READ
+				});
+			} else if (userSchool?.id) {
+				items.push({
+					title: 'My School',
+					route: '/school',
+					icon: SchoolIcon,
+					permission: SystemPermission.SCHOOLS_READ
+				});
+			}
+		}
+
+		// Add remaining nav items from config
+		return [
+			...items,
+			...navMainConfig.filter((item) => {
 				if (!item.permission) return true;
-				// Check if user has the required permission
 				return hasPermission(item.permission);
 			})
-			.map((item) => ({
-				title: item.title,
-				url: resolve(item.route),
-				icon: item.icon,
-				permission: item.permission
-			}));
+		].map((item) => ({
+			title: item.title,
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			url: resolve(item.route as any),
+			icon: item.icon,
+			permission: item.permission
+		}));
 	});
 
 	// Resolve secondary nav URLs (these are external/hash links so no resolve needed)
