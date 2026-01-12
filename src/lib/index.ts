@@ -51,7 +51,35 @@ export {
 export * from './types/permissions';
 
 // Access Control Components
-export { PermissionGuard, RoleGuard, FeatureGuard } from './components/access-control';
+export { PermissionGuard, RoleGuard, FeatureGuard, Authorize } from './components/access-control';
+
+// Authorization utilities
+export {
+	Authorization,
+	can,
+	canAny,
+	canAll,
+	createPermissionChecker,
+	createPermissionGuard,
+	Users,
+	Schools,
+	Students,
+	Levels,
+	Branches,
+	Roles,
+	Reports,
+	Settings
+} from './authorization';
+
+// Svelte actions for authorization
+export {
+	authorize,
+	requirePermission as requirePermissionAction,
+	requireRole as requireRoleAction,
+	disableWithoutPermission,
+	removeWithoutPermission,
+	type AuthorizeOptions
+} from './actions';
 
 // Permission Checking Hooks
 export {
@@ -63,3 +91,16 @@ export {
 	createFeatureCheck,
 	createRouteCheck
 } from './hooks/use-permission-checks.svelte';
+
+// Authorization Hook
+export {
+	useAuthorization,
+	getAuthorizationState,
+	createReactivePermissionCheck,
+	createReactiveAnyPermissionCheck,
+	createReactiveAllPermissionsCheck,
+	createReactiveRoleCheck,
+	createReactiveAuthCheck,
+	createReactiveFeatureCheck,
+	createReactiveRouteCheck
+} from './hooks/use-authorization.svelte';
