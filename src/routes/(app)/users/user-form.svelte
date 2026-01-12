@@ -30,6 +30,8 @@
 		onCancel?: () => void;
 	} = $props();
 
+	console.log('schoolId', schoolId);
+
 	const createUser = useCreateUser();
 	const schools = useSchools({ limit: 100 });
 	const roles = useRoles({ limit: 100 });
@@ -58,35 +60,38 @@
 		}
 	}
 
-	const form = superForm(data, {
-		validators: zod4Client(userFormSchema),
-		onUpdate: ({ form: f }: { form: SuperValidated<Infer<UserFormSchema>> }) => {
-			if (f.valid) {
-				createUser.mutate(
-					{
-						email: f.data.email,
-						first_name: f.data.first_name,
-						last_name: f.data.last_name,
-						password: f.data.password,
-						role_ids: selectedRoles.length > 0 ? selectedRoles : undefined,
-						school_id: selectedSchoolId || undefined
-					},
-					{
-						onSuccess: () => {
-							selectedRoles = [];
-							selectedSchoolId = undefined;
-							onSuccess?.();
+	const form = $derived(
+		superForm(data, {
+			validators: zod4Client(userFormSchema),
+			onUpdate: ({ form: f }: { form: SuperValidated<Infer<UserFormSchema>> }) => {
+				if (f.valid) {
+					createUser.mutate(
+						{
+							email: f.data.email,
+							first_name: f.data.first_name,
+							last_name: f.data.last_name,
+							password: f.data.password,
+							role_ids: selectedRoles.length > 0 ? selectedRoles : undefined,
+							school_id: selectedSchoolId || undefined
 						},
-						onError: (error: Error) => {
-							console.error('Failed to create user:', error.message);
+						{
+							onSuccess: () => {
+								selectedRoles = [];
+								selectedSchoolId = undefined;
+								onSuccess?.();
+							},
+							onError: (error: Error) => {
+								console.error('Failed to create user:', error.message);
+							}
 						}
-					}
-				);
+					);
+				}
 			}
-		}
-	});
+		})
+	);
 
-	const { form: formStore, enhance } = form;
+	const formStore = $derived(form.form);
+	const enhance = $derived(form.enhance);
 </script>
 
 <form method="POST" use:enhance class="space-y-6">
@@ -159,49 +164,51 @@
 		<Form.FieldErrors />
 	</Form.Field>
 
-	<div class="space-y-2">
-		<span class="text-sm font-medium">School</span>
-		{#if schools.isLoading}
-			<div class="flex items-center py-2">
-				<Loader2Icon class="h-4 w-4 animate-spin text-muted-foreground" />
-				<span class="ml-2 text-sm text-muted-foreground">Loading schools...</span>
-			</div>
-		{:else if schools.data?.data && schools.data.data.length > 0}
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
-					{#snippet child({ props })}
-						<Button {...props} variant="outline" class="w-full justify-between">
-							<span class="truncate">{selectedSchoolName}</span>
-							<ChevronDownIcon class="ml-2 h-4 w-4 shrink-0" />
-						</Button>
-					{/snippet}
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content align="start" class="max-h-60 w-full min-w-56 overflow-y-auto">
-					<DropdownMenu.Item onclick={() => (selectedSchoolId = undefined)}>
-						{#if selectedSchoolId === undefined}
-							<CheckIcon class="mr-2 h-4 w-4" />
-						{:else}
-							<span class="mr-2 w-4"></span>
-						{/if}
-						No school
-					</DropdownMenu.Item>
-					<DropdownMenu.Separator />
-					{#each schools.data.data as school (school.id)}
-						<DropdownMenu.Item onclick={() => (selectedSchoolId = school.id)}>
-							{#if selectedSchoolId === school.id}
+	{#if !schoolId}
+		<div class="space-y-2">
+			<span class="text-sm font-medium">School</span>
+			{#if schools.isLoading}
+				<div class="flex items-center py-2">
+					<Loader2Icon class="h-4 w-4 animate-spin text-muted-foreground" />
+					<span class="ml-2 text-sm text-muted-foreground">Loading schools...</span>
+				</div>
+			{:else if schools.data?.data && schools.data.data.length > 0}
+				<DropdownMenu.Root>
+					<DropdownMenu.Trigger>
+						{#snippet child({ props })}
+							<Button {...props} variant="outline" class="w-full justify-between">
+								<span class="truncate">{selectedSchoolName}</span>
+								<ChevronDownIcon class="ml-2 h-4 w-4 shrink-0" />
+							</Button>
+						{/snippet}
+					</DropdownMenu.Trigger>
+					<DropdownMenu.Content align="start" class="max-h-60 w-full min-w-56 overflow-y-auto">
+						<DropdownMenu.Item onclick={() => (selectedSchoolId = undefined)}>
+							{#if selectedSchoolId === undefined}
 								<CheckIcon class="mr-2 h-4 w-4" />
 							{:else}
 								<span class="mr-2 w-4"></span>
 							{/if}
-							{school.name}
+							No school
 						</DropdownMenu.Item>
-					{/each}
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-		{:else}
-			<p class="text-sm text-muted-foreground">No schools available</p>
-		{/if}
-	</div>
+						<DropdownMenu.Separator />
+						{#each schools.data.data as school (school.id)}
+							<DropdownMenu.Item onclick={() => (selectedSchoolId = school.id)}>
+								{#if selectedSchoolId === school.id}
+									<CheckIcon class="mr-2 h-4 w-4" />
+								{:else}
+									<span class="mr-2 w-4"></span>
+								{/if}
+								{school.name}
+							</DropdownMenu.Item>
+						{/each}
+					</DropdownMenu.Content>
+				</DropdownMenu.Root>
+			{:else}
+				<p class="text-sm text-muted-foreground">No schools available</p>
+			{/if}
+		</div>
+	{/if}
 
 	<div class="space-y-4">
 		<div>

@@ -14,8 +14,11 @@
 	import RolesDialog from './roles-dialog.svelte';
 	import DetailsDialog from './details-dialog.svelte';
 	import type { PageData } from './$types.js';
+	import { authStore } from '$lib/stores/auth.store';
 
 	let { data }: { data: PageData } = $props();
+
+	const user = $derived($authStore.user);
 
 	let showForm = $state(false);
 	let showEditDialog = $state(false);
@@ -158,7 +161,14 @@
 				<Card.Description>Add a new user to the system</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<UserForm data={data.form} onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
+				{#if user}
+					<UserForm
+						data={data.form}
+						schoolId={user.school?.id}
+						onSuccess={handleFormSuccess}
+						onCancel={handleFormCancel}
+					/>
+				{/if}
 			</Card.Content>
 		</Card.Root>
 	{/if}

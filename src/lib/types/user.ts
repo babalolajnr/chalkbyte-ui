@@ -33,7 +33,6 @@ export interface User {
 	school: UserSchool | null;
 	level: UserLevel | null;
 	branch: UserBranch | null;
-	roles: UserRole[];
 	created_at: string;
 	updated_at: string;
 }
